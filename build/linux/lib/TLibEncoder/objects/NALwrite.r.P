@@ -1,0 +1,15 @@
+objects/NALwrite.r.o: \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h \
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.cpp :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/NAL.h :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TComBitStream.h :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibEncoder/NALwrite.h :
+ /mnt/f/NewScan_For_Compare/build/linux/lib/TLibEncoder/../../../../source/Lib/TLibCommon/TypeDef.h :

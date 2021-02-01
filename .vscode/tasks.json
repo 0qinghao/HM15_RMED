@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "清理 clean",
+            "command": "make",
+            "args": [
+                "-j8",
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "构建所有 debug",
+            "command": "make",
+            "args": [
+                "-j8",
+                "debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "构建所有 release",
+            "command": "make",
+            "args": [
+                "-j8",
+                "release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/linux"
+            },
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

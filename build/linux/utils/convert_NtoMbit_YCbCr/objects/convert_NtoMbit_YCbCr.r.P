@@ -1,0 +1,17 @@
+objects/convert_NtoMbit_YCbCr.r.o: \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/App/utils/convert_NtoMbit_YCbCr.cpp \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TComPicYuv.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TypeDef.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TComRom.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibVideoIO/TVideoIOYuv.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/CommonDef.h \
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TAppCommon/program_options_lite.h
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/App/utils/convert_NtoMbit_YCbCr.cpp :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TComPicYuv.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TypeDef.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/TComRom.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibVideoIO/TVideoIOYuv.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TLibCommon/CommonDef.h :
+ /mnt/f/NewScan_For_Compare/build/linux/utils/convert_NtoMbit_YCbCr/../../../../source/Lib/TAppCommon/program_options_lite.h :
