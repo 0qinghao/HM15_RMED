@@ -38,7 +38,6 @@
 #ifndef __TCOMRDCOSTWEIGHTPREDICTION__
 #define __TCOMRDCOSTWEIGHTPREDICTION__
 
-
 #include "CommonDef.h"
 #include "TComPattern.h"
 #include "TComMv.h"
@@ -56,41 +55,39 @@ class TComPattern;
 class TComRdCostWeightPrediction
 {
 private:
-  static  Int   m_w0, m_w1; // current wp scaling values
-  static  Int   m_shift;
-  static  Int   m_offset;
-  static  Int   m_round;
-  static  Bool  m_xSetDone;
+    static Int m_w0, m_w1; // current wp scaling values
+    static Int m_shift;
+    static Int m_offset;
+    static Int m_round;
+    static Bool m_xSetDone;
 
 public:
-  TComRdCostWeightPrediction();
-  virtual ~TComRdCostWeightPrediction();
-  
+    TComRdCostWeightPrediction();
+    virtual ~TComRdCostWeightPrediction();
+
 protected:
-    
-  static inline Void  xSetWPscale(Int w0, Int w1, Int shift, Int offset, Int round);
+    static inline Void xSetWPscale(Int w0, Int w1, Int shift, Int offset, Int round);
 
-  static UInt xGetSSEw          ( DistParam* pcDtParam );
-  static UInt xGetSADw          ( DistParam* pcDtParam );
-  static UInt xGetHADs4w        ( DistParam* pcDtParam );
-  static UInt xGetHADs8w        ( DistParam* pcDtParam );
-  static UInt xGetHADsw         ( DistParam* pcDtParam );
-  static UInt xCalcHADs2x2w     ( Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep );
-  static UInt xCalcHADs4x4w     ( Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep );
-  static UInt xCalcHADs8x8w     ( Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep );
-  
-};// END CLASS DEFINITION TComRdCostWeightPrediction
+    static UInt xGetSSEw(DistParam *pcDtParam);
+    static UInt xGetSADw(DistParam *pcDtParam);
+    static UInt xGetHADs4w(DistParam *pcDtParam);
+    static UInt xGetHADs8w(DistParam *pcDtParam);
+    static UInt xGetHADsw(DistParam *pcDtParam);
+    static UInt xCalcHADs2x2w(Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep);
+    static UInt xCalcHADs4x4w(Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep);
+    static UInt xCalcHADs8x8w(Pel *piOrg, Pel *piCurr, Int iStrideOrg, Int iStrideCur, Int iStep);
 
-inline Void  TComRdCostWeightPrediction::xSetWPscale(Int w0, Int w1, Int shift, Int offset, Int round)
+}; // END CLASS DEFINITION TComRdCostWeightPrediction
+
+inline Void TComRdCostWeightPrediction::xSetWPscale(Int w0, Int w1, Int shift, Int offset, Int round)
 {
-  m_w0        = w0;
-  m_w1        = w1;
-  m_shift     = shift;
-  m_offset    = offset;
-  m_round     = round;
+    m_w0 = w0;
+    m_w1 = w1;
+    m_shift = shift;
+    m_offset = offset;
+    m_round = round;
 
-  m_xSetDone  = true;
+    m_xSetDone = true;
 }
 
 #endif // __TCOMRDCOSTWEIGHTPREDICTION__
-

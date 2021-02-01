@@ -46,96 +46,90 @@
 // ====================================================================================================================
 
 TComPic::TComPic()
-: m_uiTLayer                              (0)
-, m_bUsedByCurr                           (false)
-, m_bIsLongTerm                           (false)
-, m_apcPicSym                             (NULL)
-, m_pcPicYuvPred                          (NULL)
-, m_pcPicYuvResi                          (NULL)
-, m_bReconstructed                        (false)
-, m_bNeededForOutput                      (false)
-, m_uiCurrSliceIdx                        (0)
-, m_bCheckLTMSB                           (false)
+    : m_uiTLayer(0), m_bUsedByCurr(false), m_bIsLongTerm(false), m_apcPicSym(NULL), m_pcPicYuvPred(NULL), m_pcPicYuvResi(NULL), m_bReconstructed(false), m_bNeededForOutput(false), m_uiCurrSliceIdx(0), m_bCheckLTMSB(false)
 {
-  m_apcPicYuv[0]      = NULL;
-  m_apcPicYuv[1]      = NULL;
+    m_apcPicYuv[0] = NULL;
+    m_apcPicYuv[1] = NULL;
 }
 
 TComPic::~TComPic()
 {
 }
 
-Void TComPic::create( Int iWidth, Int iHeight, UInt uiMaxWidth, UInt uiMaxHeight, UInt uiMaxDepth, Window &conformanceWindow, Window &defaultDisplayWindow,
-                      Int *numReorderPics, Bool bIsVirtual)
+Void TComPic::create(Int iWidth, Int iHeight, UInt uiMaxWidth, UInt uiMaxHeight, UInt uiMaxDepth, Window &conformanceWindow, Window &defaultDisplayWindow,
+                     Int *numReorderPics, Bool bIsVirtual)
 
 {
-  m_apcPicSym     = new TComPicSym;  m_apcPicSym   ->create( iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth );
-  if (!bIsVirtual)
-  {
-    m_apcPicYuv[0]  = new TComPicYuv;  m_apcPicYuv[0]->create( iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth );
-  }
-  m_apcPicYuv[1]  = new TComPicYuv;  m_apcPicYuv[1]->create( iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth );
-  
-  // there are no SEI messages associated with this picture initially
-  if (m_SEIs.size() > 0)
-  {
-    deleteSEIs (m_SEIs);
-  }
-  m_bUsedByCurr = false;
+    m_apcPicSym = new TComPicSym;
+    m_apcPicSym->create(iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth);
+    if (!bIsVirtual)
+    {
+        m_apcPicYuv[0] = new TComPicYuv;
+        m_apcPicYuv[0]->create(iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth);
+    }
+    m_apcPicYuv[1] = new TComPicYuv;
+    m_apcPicYuv[1]->create(iWidth, iHeight, uiMaxWidth, uiMaxHeight, uiMaxDepth);
 
-  /* store conformance window parameters with picture */
-  m_conformanceWindow = conformanceWindow;
-  
-  /* store display window parameters with picture */
-  m_defaultDisplayWindow = defaultDisplayWindow;
+    // there are no SEI messages associated with this picture initially
+    if (m_SEIs.size() > 0)
+    {
+        deleteSEIs(m_SEIs);
+    }
+    m_bUsedByCurr = false;
 
-  /* store number of reorder pics with picture */
-  memcpy(m_numReorderPics, numReorderPics, MAX_TLAYER*sizeof(Int));
+    /* store conformance window parameters with picture */
+    m_conformanceWindow = conformanceWindow;
 
-  return;
+    /* store display window parameters with picture */
+    m_defaultDisplayWindow = defaultDisplayWindow;
+
+    /* store number of reorder pics with picture */
+    memcpy(m_numReorderPics, numReorderPics, MAX_TLAYER * sizeof(Int));
+
+    return;
 }
 
 Void TComPic::destroy()
 {
-  if (m_apcPicSym)
-  {
-    m_apcPicSym->destroy();
-    delete m_apcPicSym;
-    m_apcPicSym = NULL;
-  }
-  
-  if (m_apcPicYuv[0])
-  {
-    m_apcPicYuv[0]->destroy();
-    delete m_apcPicYuv[0];
-    m_apcPicYuv[0]  = NULL;
-  }
-  
-  if (m_apcPicYuv[1])
-  {
-    m_apcPicYuv[1]->destroy();
-    delete m_apcPicYuv[1];
-    m_apcPicYuv[1]  = NULL;
-  }
-  
-  deleteSEIs(m_SEIs);
+    if (m_apcPicSym)
+    {
+        m_apcPicSym->destroy();
+        delete m_apcPicSym;
+        m_apcPicSym = NULL;
+    }
+
+    if (m_apcPicYuv[0])
+    {
+        m_apcPicYuv[0]->destroy();
+        delete m_apcPicYuv[0];
+        m_apcPicYuv[0] = NULL;
+    }
+
+    if (m_apcPicYuv[1])
+    {
+        m_apcPicYuv[1]->destroy();
+        delete m_apcPicYuv[1];
+        m_apcPicYuv[1] = NULL;
+    }
+
+    deleteSEIs(m_SEIs);
 }
 
 Void TComPic::compressMotion()
 {
-  TComPicSym* pPicSym = getPicSym(); 
-  for ( UInt uiCUAddr = 0; uiCUAddr < pPicSym->getFrameHeightInCU()*pPicSym->getFrameWidthInCU(); uiCUAddr++ )
-  {
-    TComDataCU* pcCU = pPicSym->getCU(uiCUAddr);
-    pcCU->compressMV(); 
-  } 
+    TComPicSym *pPicSym = getPicSym();
+    for (UInt uiCUAddr = 0; uiCUAddr < pPicSym->getFrameHeightInCU() * pPicSym->getFrameWidthInCU(); uiCUAddr++)
+    {
+        TComDataCU *pcCU = pPicSym->getCU(uiCUAddr);
+        pcCU->compressMV();
+    }
 }
 
-Bool  TComPic::getSAOMergeAvailability(Int currAddr, Int mergeAddr)
+Bool TComPic::getSAOMergeAvailability(Int currAddr, Int mergeAddr)
 {
-  Bool mergeCtbInSliceSeg = (mergeAddr >= getPicSym()->getCUOrderMap(getCU(currAddr)->getSlice()->getSliceCurStartCUAddr()/getNumPartInCU()));
-  Bool mergeCtbInTile     = (getPicSym()->getTileIdxMap(mergeAddr) == getPicSym()->getTileIdxMap(currAddr));
-  return (mergeCtbInSliceSeg && mergeCtbInTile);
+    Bool mergeCtbInSliceSeg = (mergeAddr >= getPicSym()->getCUOrderMap(getCU(currAddr)->getSlice()->getSliceCurStartCUAddr() / getNumPartInCU()));
+    Bool mergeCtbInTile = (getPicSym()->getTileIdxMap(mergeAddr) == getPicSym()->getTileIdxMap(currAddr));
+    return (mergeCtbInSliceSeg && mergeCtbInTile);
 }
 
 //! \}

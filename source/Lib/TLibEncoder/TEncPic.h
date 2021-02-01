@@ -52,62 +52,62 @@
 class TEncQPAdaptationUnit
 {
 private:
-  Double m_dActivity;
+    Double m_dActivity;
 
 public:
-  TEncQPAdaptationUnit();
-  ~TEncQPAdaptationUnit();
+    TEncQPAdaptationUnit();
+    ~TEncQPAdaptationUnit();
 
-  Void   setActivity( Double d ) { m_dActivity = d; }
-  Double getActivity()           { return m_dActivity; }
+    Void setActivity(Double d) { m_dActivity = d; }
+    Double getActivity() { return m_dActivity; }
 };
 
 /// Local image characteristics for CUs on a specific depth
 class TEncPicQPAdaptationLayer
 {
 private:
-  UInt                  m_uiAQPartWidth;
-  UInt                  m_uiAQPartHeight;
-  UInt                  m_uiNumAQPartInWidth;
-  UInt                  m_uiNumAQPartInHeight;
-  TEncQPAdaptationUnit* m_acTEncAQU;
-  Double                m_dAvgActivity;
+    UInt m_uiAQPartWidth;
+    UInt m_uiAQPartHeight;
+    UInt m_uiNumAQPartInWidth;
+    UInt m_uiNumAQPartInHeight;
+    TEncQPAdaptationUnit *m_acTEncAQU;
+    Double m_dAvgActivity;
 
 public:
-  TEncPicQPAdaptationLayer();
-  virtual ~TEncPicQPAdaptationLayer();
+    TEncPicQPAdaptationLayer();
+    virtual ~TEncPicQPAdaptationLayer();
 
-  Void  create( Int iWidth, Int iHeight, UInt uiAQPartWidth, UInt uiAQPartHeight );
-  Void  destroy();
+    Void create(Int iWidth, Int iHeight, UInt uiAQPartWidth, UInt uiAQPartHeight);
+    Void destroy();
 
-  UInt                   getAQPartWidth()        { return m_uiAQPartWidth;       }
-  UInt                   getAQPartHeight()       { return m_uiAQPartHeight;      }
-  UInt                   getNumAQPartInWidth()   { return m_uiNumAQPartInWidth;  }
-  UInt                   getNumAQPartInHeight()  { return m_uiNumAQPartInHeight; }
-  UInt                   getAQPartStride()       { return m_uiNumAQPartInWidth;  }
-  TEncQPAdaptationUnit*  getQPAdaptationUnit()   { return m_acTEncAQU;           }
-  Double                 getAvgActivity()        { return m_dAvgActivity;        }
+    UInt getAQPartWidth() { return m_uiAQPartWidth; }
+    UInt getAQPartHeight() { return m_uiAQPartHeight; }
+    UInt getNumAQPartInWidth() { return m_uiNumAQPartInWidth; }
+    UInt getNumAQPartInHeight() { return m_uiNumAQPartInHeight; }
+    UInt getAQPartStride() { return m_uiNumAQPartInWidth; }
+    TEncQPAdaptationUnit *getQPAdaptationUnit() { return m_acTEncAQU; }
+    Double getAvgActivity() { return m_dAvgActivity; }
 
-  Void                   setAvgActivity( Double d )  { m_dAvgActivity = d; }
+    Void setAvgActivity(Double d) { m_dAvgActivity = d; }
 };
 
 /// Picture class including local image characteristics information for QP adaptation
 class TEncPic : public TComPic
 {
 private:
-  TEncPicQPAdaptationLayer* m_acAQLayer;
-  UInt                      m_uiMaxAQDepth;
+    TEncPicQPAdaptationLayer *m_acAQLayer;
+    UInt m_uiMaxAQDepth;
 
 public:
-  TEncPic();
-  virtual ~TEncPic();
+    TEncPic();
+    virtual ~TEncPic();
 
-  Void          create( Int iWidth, Int iHeight, UInt uiMaxWidth, UInt uiMaxHeight, UInt uiMaxDepth, UInt uiMaxAQDepth,   
-                        Window &conformanceWindow, Window &defaultDisplayWindow, Int *numReorderPics, Bool bIsVirtual = false );
-  virtual Void  destroy();
+    Void create(Int iWidth, Int iHeight, UInt uiMaxWidth, UInt uiMaxHeight, UInt uiMaxDepth, UInt uiMaxAQDepth,
+                Window &conformanceWindow, Window &defaultDisplayWindow, Int *numReorderPics, Bool bIsVirtual = false);
+    virtual Void destroy();
 
-  TEncPicQPAdaptationLayer* getAQLayer( UInt uiDepth )  { return &m_acAQLayer[uiDepth]; }
-  UInt                      getMaxAQDepth()             { return m_uiMaxAQDepth;        }
+    TEncPicQPAdaptationLayer *getAQLayer(UInt uiDepth) { return &m_acAQLayer[uiDepth]; }
+    UInt getMaxAQDepth() { return m_uiMaxAQDepth; }
 };
 
 //! \}

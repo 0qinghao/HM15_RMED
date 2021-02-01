@@ -51,10 +51,10 @@
 class TEncPreanalyzer
 {
 public:
-  TEncPreanalyzer();
-  virtual ~TEncPreanalyzer();
+    TEncPreanalyzer();
+    virtual ~TEncPreanalyzer();
 
-  Void xPreanalyze( TEncPic* pcPic );
+    Void xPreanalyze(TEncPic *pcPic);
 };
 
 //! \}

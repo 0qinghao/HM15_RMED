@@ -50,51 +50,51 @@ namespace po = df::program_options_lite;
 // Main function
 // ====================================================================================================================
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-  TAppEncTop  cTAppEncTop;
+    TAppEncTop cTAppEncTop;
 
-  // print information
-  fprintf( stdout, "\n" );
-  fprintf( stdout, "HM software: Encoder Version [%s]", NV_VERSION );
-  fprintf( stdout, NVM_ONOS );
-  fprintf( stdout, NVM_COMPILEDBY );
-  fprintf( stdout, NVM_BITS );
-  fprintf( stdout, "\n" );
+    // print information
+    fprintf(stdout, "\n");
+    fprintf(stdout, "HM software: Encoder Version [%s]", NV_VERSION);
+    fprintf(stdout, NVM_ONOS);
+    fprintf(stdout, NVM_COMPILEDBY);
+    fprintf(stdout, NVM_BITS);
+    fprintf(stdout, "\n");
 
-  // create application encoder class
-  cTAppEncTop.create();
+    // create application encoder class
+    cTAppEncTop.create();
 
-  // parse configuration
-  try
-  {
-    if(!cTAppEncTop.parseCfg( argc, argv ))
+    // parse configuration
+    try
     {
-      cTAppEncTop.destroy();
-      return 1;
+        if (!cTAppEncTop.parseCfg(argc, argv))
+        {
+            cTAppEncTop.destroy();
+            return 1;
+        }
     }
-  }
-  catch (po::ParseFailure& e)
-  {
-    cerr << "Error parsing option \""<< e.arg <<"\" with argument \""<< e.val <<"\"." << endl;
-    return 1;
-  }
+    catch (po::ParseFailure &e)
+    {
+        cerr << "Error parsing option \"" << e.arg << "\" with argument \"" << e.val << "\"." << endl;
+        return 1;
+    }
 
-  // starting time
-  double dResult;
-  long lBefore = clock();
+    // starting time
+    double dResult;
+    long lBefore = clock();
 
-  // call encoding function
-  cTAppEncTop.encode();
+    // call encoding function
+    cTAppEncTop.encode();
 
-  // ending time
-  dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;
-  printf("\n Total Time: %12.3f sec.\n", dResult);
+    // ending time
+    dResult = (double)(clock() - lBefore) / CLOCKS_PER_SEC;
+    printf("\n Total Time: %12.3f sec.\n", dResult);
 
-  // destroy application encoder class
-  cTAppEncTop.destroy();
+    // destroy application encoder class
+    cTAppEncTop.destroy();
 
-  return 0;
+    return 0;
 }
 
 //! \}

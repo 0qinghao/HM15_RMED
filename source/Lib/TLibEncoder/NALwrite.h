@@ -48,38 +48,38 @@
  */
 struct OutputNALUnit : public NALUnit
 {
-  /**
+    /**
    * construct an OutputNALunit structure with given header values and
    * storage for a bitstream.  Upon construction the NALunit header is
    * written to the bitstream.
    */
-  OutputNALUnit(
-    NalUnitType nalUnitType,
-    UInt temporalID = 0,
-    UInt reserved_zero_6bits = 0)
-  : NALUnit(nalUnitType, temporalID, reserved_zero_6bits)
-  , m_Bitstream()
-  {}
+    OutputNALUnit(
+        NalUnitType nalUnitType,
+        UInt temporalID = 0,
+        UInt reserved_zero_6bits = 0)
+        : NALUnit(nalUnitType, temporalID, reserved_zero_6bits), m_Bitstream()
+    {
+    }
 
-  OutputNALUnit& operator=(const NALUnit& src)
-  {
-    m_Bitstream.clear();
-    static_cast<NALUnit*>(this)->operator=(src);
-    return *this;
-  }
+    OutputNALUnit &operator=(const NALUnit &src)
+    {
+        m_Bitstream.clear();
+        static_cast<NALUnit *>(this)->operator=(src);
+        return *this;
+    }
 
-  TComOutputBitstream m_Bitstream;
+    TComOutputBitstream m_Bitstream;
 };
 
-void write(std::ostream& out, OutputNALUnit& nalu);
-void writeRBSPTrailingBits(TComOutputBitstream& bs);
+void write(std::ostream &out, OutputNALUnit &nalu);
+void writeRBSPTrailingBits(TComOutputBitstream &bs);
 
-inline NALUnitEBSP::NALUnitEBSP(OutputNALUnit& nalu)
-  : NALUnit(nalu)
+inline NALUnitEBSP::NALUnitEBSP(OutputNALUnit &nalu)
+    : NALUnit(nalu)
 {
-  write(m_nalUnitData, nalu);
+    write(m_nalUnitData, nalu);
 }
 
-void copyNaluData(OutputNALUnit& naluDest, const OutputNALUnit& naluSrc);
+void copyNaluData(OutputNALUnit &naluDest, const OutputNALUnit &naluSrc);
 
 //! \}
