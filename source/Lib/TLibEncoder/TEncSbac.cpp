@@ -40,6 +40,7 @@
 
 #include <map>
 #include <algorithm>
+#include <math.h>
 
 //! \ingroup TLibEncoder
 //! \{
@@ -1008,8 +1009,24 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
     }
 }
 
+template <typename T>
+vector<UInt> sort_indexes(const vector<T> &v)
+{
+    // initialize original index locations
+    vector<UInt> idx(v.size());
+    for (UInt i = 0; i != idx.size(); ++i)
+        idx[i] = i;
+
+    // sort indexes based on comparing values in v
+    sort(idx.begin(), idx.end(),
+         [&v](size_t i1, size_t i2) { return v[i1] < v[i2]; });
+
+    return idx;
+}
+
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
+    /* #region   */
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
     DTRACE_CABAC_V(eTType)
@@ -1034,6 +1051,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     DTRACE_CABAC_T("\tpredmode=")
     DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
     DTRACE_CABAC_T("\n")
+    /* #endregion */
 
     if (uiWidth > m_pcSlice->getSPS()->getMaxTrSize())
     {
@@ -1057,7 +1075,20 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     //----- encode significance map -----
     const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
     UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
-    const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
+    // const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
+    vector<Double> dDistance;
+    dDistance.resize(uiWidth * uiHeight);
+    // UInt scan[uiWidth * uiHeight];
+    vector<UInt> scan;
+    scan.resize(uiWidth * uiHeight);
+    for (Int iX = 0; iX < uiHeight; iX++)
+    {
+        for (Int iY = 0; iY < uiHeight; iY++)
+        {
+            dDistance[iX * uiWidth + iY] = sqrt(pow(iX + 1, 2) + pow(iY + 1, 2));
+        }
+    }
+    scan = sort_indexes(dDistance);
 
     Bool beValid;
     if (pcCU->getCUTransquantBypass(uiAbsPartIdx))

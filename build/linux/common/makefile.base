@@ -49,7 +49,7 @@ endif
 #CPPFLAGS          = -Wall -fPIC $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS)
 CPPFLAGS          = -fPIC $(DEFS) -I$(CURDIR)/$(INC_DIR) $(USER_INC_DIRS) -Wall -Wshadow -Wno-sign-compare -Werror
 # WSL 上添加的选项
-CPPFLAGS += -Wno-comment -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized
+CPPFLAGS += -Wno-comment -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized 
 
 ########## 
 # enforce 32-bit build : 1=yes, 0=no
@@ -197,14 +197,14 @@ $(OBJ_DIR)/%.d.o: $(SRC_DIR4)/%.asm
 # see also: http://make.paulandlesley.org/autodep.html
 #    2005-01-25 Steffen Kamp (kamp@ient.rwth-aachen.de), RWTH Aachen
 define COMPILE_AND_DEPEND_RELEASE
-        $(CPP) -c -MMD -MF $(OBJ_DIR)/$*.r.d -MT $(OBJ_DIR)/$*.r.o $(CPPFLAGS) $(RELEASE_CPPFLAGS) -o $@ $(CURDIR)/$<
+        $(CPP) -std=c++11 -c -MMD -MF $(OBJ_DIR)/$*.r.d -MT $(OBJ_DIR)/$*.r.o $(CPPFLAGS) $(RELEASE_CPPFLAGS) -o $@ $(CURDIR)/$<
         @cp $(OBJ_DIR)/$*.r.d $(OBJ_DIR)/$*.r.P; \
                 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(OBJ_DIR)/$*.r.d >> $(OBJ_DIR)/$*.r.P; \
                 rm -f $(OBJ_DIR)/$*.r.d
 endef
 define COMPILE_AND_DEPEND_DEBUG
-        $(CPP) -c -MMD -MF $(OBJ_DIR)/$*.d.d -MT $(OBJ_DIR)/$*.d.o $(CPPFLAGS) $(DEBUG_CPPFLAGS) -o $@ $(CURDIR)/$<
+        $(CPP) -std=c++11 -c -MMD -MF $(OBJ_DIR)/$*.d.d -MT $(OBJ_DIR)/$*.d.o $(CPPFLAGS) $(DEBUG_CPPFLAGS) -o $@ $(CURDIR)/$<
         @cp $(OBJ_DIR)/$*.d.d $(OBJ_DIR)/$*.d.P; \
                 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
                 -e '/^$$/ d' -e 's/$$/ :/' < $(OBJ_DIR)/$*.d.d >> $(OBJ_DIR)/$*.d.P; \
