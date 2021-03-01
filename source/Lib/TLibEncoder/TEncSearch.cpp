@@ -1035,6 +1035,7 @@ Void TEncSearch::xIntraCodingLumaBlk(TComDataCU *pcCU,
     {
         pcCU->getPattern()->initPattern(pcCU, uiTrDepth, uiAbsPartIdx);
         pcCU->getPattern()->initAdiPattern(pcCU, uiAbsPartIdx, uiTrDepth, m_piYuvExt, m_iYuvExtStride, m_iYuvExtHeight, bAboveAvail, bLeftAvail);
+        FillRefLP(m_piYuvExt, piOrg, uiWidth, 0b1111);
         //===== get prediction signal =====
         predIntraLumaAng(pcCU->getPattern(), uiLumaPredMode, piPred, uiStride, uiWidth, uiHeight, bAboveAvail, bLeftAvail);
         // save prediction

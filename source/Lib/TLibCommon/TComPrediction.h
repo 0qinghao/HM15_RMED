@@ -73,6 +73,7 @@ protected:
 
     Void xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *&rpDst, Int dstStride, UInt width, UInt height, UInt dirMode, Bool blkAboveAvailable, Bool blkLeftAvailable, Bool bFilter);
     Void xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height);
+    Void xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiMode);
 
     // motion compensation functions
     Void xPredInterUni(TComDataCU *pcCU, UInt uiPartAddr, Int iWidth, Int iHeight, RefPicList eRefPicList, TComYuv *&rpcYuvPred, Bool bi = false);
@@ -107,6 +108,7 @@ public:
     Int *getPredicBuf() { return m_piYuvExt; }
     Int getPredicBufWidth() { return m_iYuvExtStride; }
     Int getPredicBufHeight() { return m_iYuvExtHeight; }
+    Void FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask);
 };
 
 //! \}

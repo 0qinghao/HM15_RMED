@@ -191,7 +191,8 @@ Void TComPrediction::xPredIntraAng(Int bitDepth, Int *pSrc, Int srcStride, Pel *
     Bool modeDC = dirMode < 2;
     Bool modeHor = !modeDC && (dirMode < 18);
     Bool modeVer = !modeDC && !modeHor;
-    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX) : 0;
+    Int intraPredAngle = modeVer ? (Int)dirMode - VER_IDX : modeHor ? -((Int)dirMode - HOR_IDX)
+                                                                    : 0;
     Int absAng = abs(intraPredAngle);
     Int signAng = intraPredAngle < 0 ? -1 : 1;
 
@@ -343,9 +344,14 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
     Int sw = 2 * iWidth + 1;
 
     // Create the prediction
-    if (uiDirMode == PLANAR_IDX)
+    if (uiDirMode == 27)
     {
         xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+    }
+    else if (uiDirMode == PLANAR_IDX || uiDirMode == 9 || uiDirMode == 25)
+    {
+        // xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode);
     }
     else
     {
@@ -364,7 +370,74 @@ Void TComPrediction::predIntraLumaAng(TComPattern *pcTComPattern, UInt uiDirMode
         }
     }
 }
+Void TComPrediction::FillRefLP(Int *piRef, Pel *piOrg, UInt uiWidth, UInt mask)
+{
 
+    UInt uiStrideRef = uiWidth * 2 + 1;
+    UInt uiStrideOrg = (uiWidth == 4) ? 8 : uiWidth;
+    piRef += uiStrideRef + 1;
+
+    Int *piRefbak = piRef;
+    Pel *piOrgbak = piOrg;
+    Int i, j, k;
+
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        for (j = uiWidth; j < 2 * uiWidth; j++)
+        {
+            piRef[j] = piOrg[uiWidth - 1];
+        }
+
+        piRef += uiStrideRef;
+        piOrg += uiStrideOrg;
+    }
+    piOrg -= uiStrideOrg;
+    for (i = 0; i < uiWidth; i++)
+    {
+        for (j = 0; j < uiWidth; j++)
+        {
+            piRef[j] = piOrg[j];
+        }
+        piRef += uiStrideRef;
+    }
+
+    piRef = piRefbak;
+    piOrg = piOrgbak;
+    switch (mask)
+    {
+    case 0b1011:
+        piRef += uiWidth / 2;
+        piOrg += uiWidth / 2;
+        for (i = 0; i < uiWidth / 2 - 1; i++)
+        {
+            for (j = 0; j < (uiWidth / 2) * 3; j++)
+            {
+                piRef[j] = piOrg[-1];
+            }
+            piRef += uiStrideRef;
+            piOrg += uiStrideOrg;
+        }
+        break;
+    case 0b1101:
+        piRef += uiWidth / 2 * uiStrideRef;
+        piOrg += uiWidth / 2 * uiStrideOrg;
+        for (i = 0; i < uiWidth / 2 * 3; i++)
+        {
+            for (j = 0; j < uiWidth / 2 - 1; j++)
+            {
+                piRef[j] = *(piOrg + j - uiStrideOrg);
+            }
+            piRef += uiStrideRef;
+        }
+        break;
+    default:
+        break;
+    }
+}
 // Angular chroma
 Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred, UInt uiStride, Int iWidth, Int iHeight, Bool bAbove, Bool bLeft)
 {
@@ -374,9 +447,14 @@ Void TComPrediction::predIntraChromaAng(Int *piSrc, UInt uiDirMode, Pel *piPred,
     // get starting pixel in block
     Int sw = 2 * iWidth + 1;
 
-    if (uiDirMode == PLANAR_IDX)
+    if (uiDirMode == 27)
     {
         xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+    }
+    else if (uiDirMode == PLANAR_IDX || uiDirMode == 9 || uiDirMode == 25)
+    {
+        // xPredIntraPlanar(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight);
+        xPredIntraPlanarnew(ptrSrc + sw + 1, sw, pDst, uiStride, iWidth, iHeight, uiDirMode);
     }
     else
     {
@@ -684,6 +762,102 @@ Void TComPrediction::getMvPredAMVP(TComDataCU *pcCU, UInt uiPartIdx, UInt uiPart
  *
  * This function derives the prediction samples for planar mode (intra coding).
  */
+Void TComPrediction::xPredIntraPlanarnew(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height, UInt uiMode)
+{
+    assert(width == height);
+    Int k, l, bottomLeft, topRight;
+    Int horPred;
+    Int leftColumn[MAX_CU_SIZE + 1], topRow[MAX_CU_SIZE + 1], bottomRow[MAX_CU_SIZE], rightColumn[MAX_CU_SIZE];
+    UInt blkSize = width;
+    // Get left and above reference column and row
+    for (k = 0; k < blkSize + 1; k++)
+    {
+        topRow[k] = pSrc[k - srcStride];
+        leftColumn[k] = pSrc[k * srcStride - 1];
+    }
+    // Prepare intermediate variables used in interpolation
+    bottomLeft = leftColumn[blkSize];
+    topRight = topRow[blkSize];
+
+    if (uiMode == PLANAR_IDX)
+    {
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                Pel left = pSrc[k * srcStride - 1 + l];
+                Pel top = pSrc[(k - 1) * srcStride + l];
+                Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
+                if (lefttop >= max(left, top))
+                {
+                    rpDst[k * dstStride + l] = min(left, top);
+                }
+                else if (lefttop <= min(left, top))
+                {
+                    rpDst[k * dstStride + l] = max(left, top);
+                }
+                else
+                {
+                    rpDst[k * dstStride + l] = left + top - lefttop;
+                }
+            }
+        }
+    }
+    else if (uiMode == 9)
+    {
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                Pel left = pSrc[k * srcStride - 1 + l];
+                Pel top = pSrc[(k - 1) * srcStride + l];
+                Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
+                Pel leftdown = pSrc[(k + 1) * srcStride - 1 + l];
+                // if (leftdown >= max(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = min(left, top);
+                // }
+                // else if (leftdown <= min(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = max(left, top);
+                // }
+                // else
+                {
+                    rpDst[k * dstStride + l] = leftdown + top - left;
+                }
+            }
+        }
+    }
+    else if (uiMode == 25)
+    {
+        for (k = 0; k < blkSize; k++)
+        {
+            for (l = 0; l < blkSize; l++)
+            {
+                Pel left = pSrc[k * srcStride - 1 + l];
+                Pel top = pSrc[(k - 1) * srcStride + l];
+                Pel lefttop = pSrc[(k - 1) * srcStride - 1 + l];
+                Pel righttop = pSrc[(k - 1) * srcStride + 1 + l];
+                // if (righttop >= max(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = min(left, top);
+                // }
+                // else if (righttop <= min(left, top))
+                // {
+                //     rpDst[k * dstStride + l] = max(left, top);
+                // }
+                // else
+                {
+                    rpDst[k * dstStride + l] = left + righttop - top;
+                }
+            }
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+}
 Void TComPrediction::xPredIntraPlanar(Int *pSrc, Int srcStride, Pel *rpDst, Int dstStride, UInt width, UInt height)
 {
     assert(width == height);

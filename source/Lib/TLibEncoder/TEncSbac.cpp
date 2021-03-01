@@ -1076,59 +1076,59 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
     UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
 
+    const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
     // 新扫描顺序
-    // const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
-    UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
-    ucDir = ucDir == 36 ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
-    Double dCostheta[35] = {0, 0, 0.707106781186548, 0.776114000116266, 0.836047910837063, 0.883115719457411, 0.926466577122309, 0.962650940153899, 0.988012033751102, 0.998052578482889, 1, 0.0623782861551805, 0.154376880273610, 0.270745576918284, 0.376377046955938, 0.469155225961749, 0.548656441486823, 0.630592625094466, 0.707106781186548, 0.630592625094466, 0.548656441486823, 0.469155225961749, 0.376377046955938, 0.270745576918284, 0.154376880273610, 0.0623782861551805, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Double dSintheta[35] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.998052578482889, 0.988012033751102, 0.962650940153899, 0.926466577122309, 0.883115719457411, 0.836047910837063, 0.776114000116266, 0.707106781186548, 0.776114000116266, 0.836047910837063, 0.883115719457411, 0.926466577122309, 0.962650940153899, 0.988012033751102, 0.998052578482889, 0, 0.998052578482889, 0.988012033751102, 0.962650940153899, 0.926466577122309, 0.883115719457411, 0.836047910837063, 0.776114000116266, 0.707106781186548};
-    vector<Double> dDistance;
-    dDistance.resize(uiWidth * uiHeight);
-    // UInt scan[uiWidth * uiHeight];
-    vector<UInt> scan;
-    scan.resize(uiWidth * uiHeight);
-    if (ucDir <= 1)
-    {
-        for (Int iX = 0; iX < uiHeight; iX++)
-        {
-            for (Int iY = 0; iY < uiHeight; iY++)
-            {
-                // dDistance[iX * uiWidth + iY] = sqrt(pow(iX + 1, 2) + pow(iY + 1, 2));
-                dDistance[iX * uiWidth + iY] = (iX + 1) + (iY + 1);
-            }
-        }
-    }
-    else if (ucDir <= 10)
-    {
-        for (Int iX = 0; iX < uiHeight; iX++)
-        {
-            for (Int iY = 0; iY < uiHeight; iY++)
-            {
-                dDistance[iX * uiWidth + iY] = (iY + 1) / dCostheta[ucDir];
-            }
-        }
-    }
-    else if (ucDir >= 26)
-    {
-        for (Int iX = 0; iX < uiHeight; iX++)
-        {
-            for (Int iY = 0; iY < uiHeight; iY++)
-            {
-                dDistance[iX * uiWidth + iY] = (iX + 1) / dSintheta[ucDir];
-            }
-        }
-    }
-    else
-    {
-        for (Int iX = 0; iX < uiHeight; iX++)
-        {
-            for (Int iY = 0; iY < uiHeight; iY++)
-            {
-                dDistance[iX * uiWidth + iY] = min((iY + 1) / dSintheta[ucDir], (iX + 1) / dCostheta[ucDir]);
-            }
-        }
-    }
-    scan = sort_indexes(dDistance);
+    // UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
+    // ucDir = ucDir == 36 ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
+    // Double dCostheta[35] = {0, 0, 0.707106781186548, 0.776114000116266, 0.836047910837063, 0.883115719457411, 0.926466577122309, 0.962650940153899, 0.988012033751102, 0.998052578482889, 1, 0.0623782861551805, 0.154376880273610, 0.270745576918284, 0.376377046955938, 0.469155225961749, 0.548656441486823, 0.630592625094466, 0.707106781186548, 0.630592625094466, 0.548656441486823, 0.469155225961749, 0.376377046955938, 0.270745576918284, 0.154376880273610, 0.0623782861551805, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    // Double dSintheta[35] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.998052578482889, 0.988012033751102, 0.962650940153899, 0.926466577122309, 0.883115719457411, 0.836047910837063, 0.776114000116266, 0.707106781186548, 0.776114000116266, 0.836047910837063, 0.883115719457411, 0.926466577122309, 0.962650940153899, 0.988012033751102, 0.998052578482889, 0, 0.998052578482889, 0.988012033751102, 0.962650940153899, 0.926466577122309, 0.883115719457411, 0.836047910837063, 0.776114000116266, 0.707106781186548};
+    // vector<Double> dDistance;
+    // dDistance.resize(uiWidth * uiHeight);
+    // // UInt scan[uiWidth * uiHeight];
+    // vector<UInt> scan;
+    // scan.resize(uiWidth * uiHeight);
+    // if (ucDir <= 1)
+    // {
+    //     for (Int iX = 0; iX < uiHeight; iX++)
+    //     {
+    //         for (Int iY = 0; iY < uiHeight; iY++)
+    //         {
+    //             // dDistance[iX * uiWidth + iY] = sqrt(pow(iX + 1, 2) + pow(iY + 1, 2));
+    //             dDistance[iX * uiWidth + iY] = (iX + 1) + (iY + 1);
+    //         }
+    //     }
+    // }
+    // else if (ucDir <= 10)
+    // {
+    //     for (Int iX = 0; iX < uiHeight; iX++)
+    //     {
+    //         for (Int iY = 0; iY < uiHeight; iY++)
+    //         {
+    //             dDistance[iX * uiWidth + iY] = (iY + 1) / dCostheta[ucDir];
+    //         }
+    //     }
+    // }
+    // else if (ucDir >= 26)
+    // {
+    //     for (Int iX = 0; iX < uiHeight; iX++)
+    //     {
+    //         for (Int iY = 0; iY < uiHeight; iY++)
+    //         {
+    //             dDistance[iX * uiWidth + iY] = (iX + 1) / dSintheta[ucDir];
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     for (Int iX = 0; iX < uiHeight; iX++)
+    //     {
+    //         for (Int iY = 0; iY < uiHeight; iY++)
+    //         {
+    //             dDistance[iX * uiWidth + iY] = min((iY + 1) / dSintheta[ucDir], (iX + 1) / dCostheta[ucDir]);
+    //         }
+    //     }
+    // }
+    // scan = sort_indexes(dDistance);
     // 新扫描顺序
 
     Bool beValid;
