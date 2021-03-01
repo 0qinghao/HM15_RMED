@@ -1075,6 +1075,8 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     //----- encode significance map -----
     const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
     UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
+
+    // 新扫描顺序
     // const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
     vector<Double> dDistance;
     dDistance.resize(uiWidth * uiHeight);
@@ -1085,10 +1087,12 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     {
         for (Int iY = 0; iY < uiHeight; iY++)
         {
-            dDistance[iX * uiWidth + iY] = sqrt(pow(iX + 1, 2) + pow(iY + 1, 2));
+            // dDistance[iX * uiWidth + iY] = sqrt(pow(iX + 1, 2) + pow(iY + 1, 2));
+            dDistance[iX * uiWidth + iY] = iX + iY;
         }
     }
     scan = sort_indexes(dDistance);
+    // 新扫描顺序
 
     Bool beValid;
     if (pcCU->getCUTransquantBypass(uiAbsPartIdx))
