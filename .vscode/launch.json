@@ -102,6 +102,31 @@
             ],
         },
         {
+            "name": "调试编码器 BaskText",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/TAppEncoderStaticd",
+            "args": [
+                "-c",
+                "${workspaceFolder}/cfg/encoder_intra_main_LL.cfg",
+                "-c",
+                "${workspaceFolder}/cfg/per-sequence/BasketballDrillText.cfg"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bin",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
             "name": "调试解码器 basketballpass",
             "type": "cppdbg",
             "request": "launch",
@@ -186,6 +211,31 @@
                 "${workspaceFolder}/bin/RaceHorses_832x480_30.bin",
                 "-o",
                 "${workspaceFolder}/bin/RaceHorses_832x480_30_dec.yuv"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bin",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
+            "name": "调试解码器 BaskText",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/TAppDecoderStaticd",
+            "args": [
+                "-b",
+                "${workspaceFolder}/bin/BasketballDrillText_832x480_50.bin",
+                "-o",
+                "${workspaceFolder}/bin/BasketballDrillText_832x480_50_dec.yuv"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
