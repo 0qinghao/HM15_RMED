@@ -1024,11 +1024,11 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             TCoeff left = pcCoef[k * uiWidth - 1 + l];
             TCoeff top = pcCoef[(k - 1) * uiWidth + l];
             TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
-            if (lefttop > max(left, top))
+            if (lefttop >= max(left, top))
             {
                 pcCoefRe[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
             }
-            else if (lefttop < min(left, top))
+            else if (lefttop <= min(left, top))
             {
                 pcCoefRe[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
             }
