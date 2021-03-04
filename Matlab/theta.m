@@ -9,7 +9,7 @@ costhe11_25 = cos(ang);
 sinthe11_25 = sin(ang);
 
 ang = atan(32./[2,5,9,13,17,21,26,32]);
-sinthe26_34 = [0,sin(ang)];
+sinthe26_34 = [1,sin(ang)];
 costhe26_34 = zeros(1,9);
 
 costhe = [0,0,costhe2_10,costhe11_25,costhe26_34];
