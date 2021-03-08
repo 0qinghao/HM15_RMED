@@ -1010,12 +1010,12 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
-    TCoeff pcCoefRe[uiWidth * uiHeight];
+    TCoeff pcCoefReLT[uiWidth * uiHeight];
     Int k, l;
     for (k = 0; k < uiWidth; k++)
     {
-        pcCoefRe[k] = pcCoef[k];
-        pcCoefRe[k * uiWidth] = pcCoef[k * uiWidth];
+        pcCoefReLT[k] = pcCoef[k];
+        pcCoefReLT[k * uiWidth] = pcCoef[k * uiWidth];
     }
     for (k = 1; k < uiWidth; k++)
     {
@@ -1026,19 +1026,18 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
             if (lefttop >= max(left, top))
             {
-                pcCoefRe[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
+                pcCoefReLT[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
             }
             else if (lefttop <= min(left, top))
             {
-                pcCoefRe[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
+                pcCoefReLT[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
             }
             else
             {
-                pcCoefRe[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
+                pcCoefReLT[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
             }
         }
     }
-    // memcpy(pcCoef, pcCoefRe, sizeof(TCoeff) * uiWidth * uiHeight);
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
@@ -1075,7 +1074,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     // compute number of significant coefficients
     // uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
-    uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoefRe, uiWidth * uiHeight);
+    uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
 
     if (uiNumSig == 0)
         return;
@@ -1131,13 +1130,13 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
         UInt uiPosX = posLast - (uiPosY << uiLog2BlockSize);
         UInt uiBlkIdx = uiNumBlkSide * (uiPosY >> uiShift) + (uiPosX >> uiShift);
         // if (pcCoef[posLast])
-        if (pcCoefRe[posLast])
+        if (pcCoef[posLast])
         {
             uiSigCoeffGroupFlag[uiBlkIdx] = 1;
         }
 
         // uiNumSig -= (pcCoef[posLast] != 0);
-        uiNumSig -= (pcCoefRe[posLast] != 0);
+        uiNumSig -= (pcCoef[posLast] != 0);
     } while (uiNumSig > 0);
 
     // Code position of last coefficient
@@ -1167,9 +1166,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
         if (iScanPosSig == scanPosLast)
         {
             // absCoeff[0] = abs(pcCoef[posLast]);
-            absCoeff[0] = abs(pcCoefRe[posLast]);
+            absCoeff[0] = abs(pcCoef[posLast]);
             // coeffSigns = (pcCoef[posLast] < 0);
-            coeffSigns = (pcCoefRe[posLast] < 0);
+            coeffSigns = (pcCoef[posLast] < 0);
             numNonZero = 1;
             lastNZPosInCG = iScanPosSig;
             firstNZPosInCG = iScanPosSig;
@@ -1202,7 +1201,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 uiPosY = uiBlkPos >> uiLog2BlockSize;
                 uiPosX = uiBlkPos - (uiPosY << uiLog2BlockSize);
                 // uiSig = (pcCoef[uiBlkPos] != 0);
-                uiSig = (pcCoefRe[uiBlkPos] != 0);
+                uiSig = (pcCoef[uiBlkPos] != 0);
                 if (iScanPosSig > iSubPos || iSubSet == 0 || numNonZero)
                 {
                     uiCtxSig = TComTrQuant::getSigCtxInc(patternSigCtx, uiScanIdx, uiPosX, uiPosY, uiLog2BlockSize, eTType);
@@ -1211,9 +1210,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 if (uiSig)
                 {
                     // absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
-                    absCoeff[numNonZero] = abs(pcCoefRe[uiBlkPos]);
+                    absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
                     // coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
-                    coeffSigns = 2 * coeffSigns + (pcCoefRe[uiBlkPos] < 0);
+                    coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
                     numNonZero++;
                     if (lastNZPosInCG == -1)
                     {
