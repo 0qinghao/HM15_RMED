@@ -103,6 +103,7 @@ public:
     virtual Void codeMvd(TComDataCU *pcCU, UInt uiAbsPartIdx, RefPicList eRefList) = 0;
     virtual Void codeDeltaQP(TComDataCU *pcCU, UInt uiAbsPartIdx) = 0;
     virtual Void codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType) = 0;
+    virtual Void codeCoeffNxNwr(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType) = 0;
     virtual Void codeTransformSkipFlags(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt width, UInt height, TextType eTType) = 0;
     virtual Void codeSAOBlkParam(SAOBlkParam &saoBlkParam, Bool *sliceEnabled, Bool leftMergeAvail, Bool aboveMergeAvail, Bool onlyEstMergeInfo = false) = 0;
     virtual Void estBit(estBitsSbacStruct *pcEstBitsSbac, Int width, Int height, TextType eTType) = 0;
@@ -176,9 +177,11 @@ public:
 
 private:
     Void xEncodeTransform(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);
+    Void xEncodeTransformwr(TComDataCU *pcCU, UInt offsetLumaOffset, UInt offsetChroma, UInt uiAbsPartIdx, UInt uiDepth, UInt width, UInt height, UInt uiTrIdx, Bool &bCodeDQP);
 
 public:
     Void encodeCoeff(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, UInt uiWidth, UInt uiHeight, Bool &bCodeDQP);
+    Void encodeCoeffwr(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth, UInt uiWidth, UInt uiHeight, Bool &bCodeDQP);
 
     Void encodeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoeff, UInt uiAbsPartIdx, UInt uiTrWidth, UInt uiTrHeight, UInt uiDepth, TextType eType);
 

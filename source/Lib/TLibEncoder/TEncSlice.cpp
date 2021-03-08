@@ -1324,11 +1324,11 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
         if ((m_pcCfg->getSliceMode() != 0 || m_pcCfg->getSliceSegmentMode() != 0) &&
             uiCUAddr == rpcPic->getPicSym()->getCUOrderMap((uiBoundingCUAddr + rpcPic->getNumPartInCU() - 1) / rpcPic->getNumPartInCU() - 1))
         {
-            m_pcCuEncoder->encodeCU(pcCU);
+            m_pcCuEncoder->encodeCUwr(pcCU);
         }
         else
         {
-            m_pcCuEncoder->encodeCU(pcCU);
+            m_pcCuEncoder->encodeCUwr(pcCU);
         }
 #if ENC_DEC_TRACE
         g_bJustDoIt = g_bEncDecTraceDisable;

@@ -40,6 +40,7 @@
 
 #include <map>
 #include <algorithm>
+#include <math.h>
 
 //! \ingroup TLibEncoder
 //! \{
@@ -1010,8 +1011,297 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
+    DTRACE_CABAC_VL(g_nSymbolCounter++)
+    DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
+    DTRACE_CABAC_V(eTType)
+    DTRACE_CABAC_T("\twidth=")
+    DTRACE_CABAC_V(uiWidth)
+    DTRACE_CABAC_T("\theight=")
+    DTRACE_CABAC_V(uiHeight)
+    DTRACE_CABAC_T("\tdepth=")
+    DTRACE_CABAC_V(uiDepth)
+    DTRACE_CABAC_T("\tabspartidx=")
+    DTRACE_CABAC_V(uiAbsPartIdx)
+    DTRACE_CABAC_T("\ttoCU-X=")
+    DTRACE_CABAC_V(pcCU->getCUPelX())
+    DTRACE_CABAC_T("\ttoCU-Y=")
+    DTRACE_CABAC_V(pcCU->getCUPelY())
+    DTRACE_CABAC_T("\tCU-addr=")
+    DTRACE_CABAC_V(pcCU->getAddr())
+    DTRACE_CABAC_T("\tinCU-X=")
+    DTRACE_CABAC_V(g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]])
+    DTRACE_CABAC_T("\tinCU-Y=")
+    DTRACE_CABAC_V(g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]])
+    DTRACE_CABAC_T("\tpredmode=")
+    DTRACE_CABAC_V(pcCU->getPredictionMode(uiAbsPartIdx))
+    DTRACE_CABAC_T("\n")
+
+    if (uiWidth > m_pcSlice->getSPS()->getMaxTrSize())
+    {
+        uiWidth = m_pcSlice->getSPS()->getMaxTrSize();
+        uiHeight = m_pcSlice->getSPS()->getMaxTrSize();
+    }
+
+    UInt uiNumSig = 0;
+
+    // compute number of significant coefficients
+    // uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
+    uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
+
+    if (uiNumSig == 0)
+        return;
+    if (pcCU->getSlice()->getPPS()->getUseTransformSkip())
+    {
+        codeTransformSkipFlags(pcCU, uiAbsPartIdx, uiWidth, uiHeight, eTType);
+    }
+    eTType = eTType == TEXT_LUMA ? TEXT_LUMA : (eTType == TEXT_NONE ? TEXT_NONE : TEXT_CHROMA);
+
+    //----- encode significance map -----
+    const UInt uiLog2BlockSize = g_aucConvertToBit[uiWidth] + 2;
+    UInt uiScanIdx = pcCU->getCoefScanIdx(uiAbsPartIdx, uiWidth, eTType == TEXT_LUMA, pcCU->isIntra(uiAbsPartIdx));
+    const UInt *scan = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize - 1];
+
+    Bool beValid;
+    if (pcCU->getCUTransquantBypass(uiAbsPartIdx))
+    {
+        beValid = false;
+    }
+    else
+    {
+        beValid = pcCU->getSlice()->getPPS()->getSignHideFlag() > 0;
+    }
+
+    // Find position of last coefficient
+    Int scanPosLast = -1;
+    Int posLast;
+
+    const UInt *scanCG;
+    {
+        scanCG = g_auiSigLastScan[uiScanIdx][uiLog2BlockSize > 3 ? uiLog2BlockSize - 2 - 1 : 0];
+        if (uiLog2BlockSize == 3)
+        {
+            scanCG = g_sigLastScan8x8[uiScanIdx];
+        }
+        else if (uiLog2BlockSize == 5)
+        {
+            scanCG = g_sigLastScanCG32x32;
+        }
+    }
+    UInt uiSigCoeffGroupFlag[MLS_GRP_NUM];
+    static const UInt uiShift = MLS_CG_SIZE >> 1;
+    const UInt uiNumBlkSide = uiWidth >> uiShift;
+
+    ::memset(uiSigCoeffGroupFlag, 0, sizeof(UInt) * MLS_GRP_NUM);
+
+    do
+    {
+        posLast = scan[++scanPosLast];
+
+        // get L1 sig map
+        UInt uiPosY = posLast >> uiLog2BlockSize;
+        UInt uiPosX = posLast - (uiPosY << uiLog2BlockSize);
+        UInt uiBlkIdx = uiNumBlkSide * (uiPosY >> uiShift) + (uiPosX >> uiShift);
+        // if (pcCoef[posLast])
+        if (pcCoef[posLast])
+        {
+            uiSigCoeffGroupFlag[uiBlkIdx] = 1;
+        }
+
+        // uiNumSig -= (pcCoef[posLast] != 0);
+        uiNumSig -= (pcCoef[posLast] != 0);
+    } while (uiNumSig > 0);
+
+    // Code position of last coefficient
+    Int posLastY = posLast >> uiLog2BlockSize;
+    Int posLastX = posLast - (posLastY << uiLog2BlockSize);
+    codeLastSignificantXY(posLastX, posLastY, uiWidth, uiHeight, eTType, uiScanIdx);
+
+    //===== code significance flag =====
+    ContextModel *const baseCoeffGroupCtx = m_cCUSigCoeffGroupSCModel.get(0, eTType);
+    ContextModel *const baseCtx = (eTType == TEXT_LUMA) ? m_cCUSigSCModel.get(0, 0) : m_cCUSigSCModel.get(0, 0) + NUM_SIG_FLAG_CTX_LUMA;
+
+    const Int iLastScanSet = scanPosLast >> LOG2_SCAN_SET_SIZE;
+    UInt c1 = 1;
+    UInt uiGoRiceParam = 0;
+    Int iScanPosSig = scanPosLast;
+
+    for (Int iSubSet = iLastScanSet; iSubSet >= 0; iSubSet--)
+    {
+        Int numNonZero = 0;
+        Int iSubPos = iSubSet << LOG2_SCAN_SET_SIZE;
+        uiGoRiceParam = 0;
+        Int absCoeff[16];
+        UInt coeffSigns = 0;
+
+        Int lastNZPosInCG = -1, firstNZPosInCG = SCAN_SET_SIZE;
+
+        if (iScanPosSig == scanPosLast)
+        {
+            // absCoeff[0] = abs(pcCoef[posLast]);
+            absCoeff[0] = abs(pcCoef[posLast]);
+            // coeffSigns = (pcCoef[posLast] < 0);
+            coeffSigns = (pcCoef[posLast] < 0);
+            numNonZero = 1;
+            lastNZPosInCG = iScanPosSig;
+            firstNZPosInCG = iScanPosSig;
+            iScanPosSig--;
+        }
+
+        // encode significant_coeffgroup_flag
+        Int iCGBlkPos = scanCG[iSubSet];
+        Int iCGPosY = iCGBlkPos / uiNumBlkSide;
+        Int iCGPosX = iCGBlkPos - (iCGPosY * uiNumBlkSide);
+        if (iSubSet == iLastScanSet || iSubSet == 0)
+        {
+            uiSigCoeffGroupFlag[iCGBlkPos] = 1;
+        }
+        else
+        {
+            UInt uiSigCoeffGroup = (uiSigCoeffGroupFlag[iCGBlkPos] != 0);
+            UInt uiCtxSig = TComTrQuant::getSigCoeffGroupCtxInc(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+            m_pcBinIf->encodeBin(uiSigCoeffGroup, baseCoeffGroupCtx[uiCtxSig]);
+        }
+
+        // encode significant_coeff_flag
+        if (uiSigCoeffGroupFlag[iCGBlkPos])
+        {
+            Int patternSigCtx = TComTrQuant::calcPatternSigCtx(uiSigCoeffGroupFlag, iCGPosX, iCGPosY, uiWidth, uiHeight);
+            UInt uiBlkPos, uiPosY, uiPosX, uiSig, uiCtxSig;
+            for (; iScanPosSig >= iSubPos; iScanPosSig--)
+            {
+                uiBlkPos = scan[iScanPosSig];
+                uiPosY = uiBlkPos >> uiLog2BlockSize;
+                uiPosX = uiBlkPos - (uiPosY << uiLog2BlockSize);
+                // uiSig = (pcCoef[uiBlkPos] != 0);
+                uiSig = (pcCoef[uiBlkPos] != 0);
+                if (iScanPosSig > iSubPos || iSubSet == 0 || numNonZero)
+                {
+                    uiCtxSig = TComTrQuant::getSigCtxInc(patternSigCtx, uiScanIdx, uiPosX, uiPosY, uiLog2BlockSize, eTType);
+                    m_pcBinIf->encodeBin(uiSig, baseCtx[uiCtxSig]);
+                }
+                if (uiSig)
+                {
+                    // absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
+                    absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
+                    // coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
+                    coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
+                    numNonZero++;
+                    if (lastNZPosInCG == -1)
+                    {
+                        lastNZPosInCG = iScanPosSig;
+                    }
+                    firstNZPosInCG = iScanPosSig;
+                }
+            }
+        }
+        else
+        {
+            iScanPosSig = iSubPos - 1;
+        }
+
+        if (numNonZero > 0)
+        {
+            Bool signHidden = (lastNZPosInCG - firstNZPosInCG >= SBH_THRESHOLD);
+            UInt uiCtxSet = (iSubSet > 0 && eTType == TEXT_LUMA) ? 2 : 0;
+
+            if (c1 == 0)
+            {
+                uiCtxSet++;
+            }
+            c1 = 1;
+            ContextModel *baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUOneSCModel.get(0, 0) + 4 * uiCtxSet : m_cCUOneSCModel.get(0, 0) + NUM_ONE_FLAG_CTX_LUMA + 4 * uiCtxSet;
+
+            Int numC1Flag = min(numNonZero, C1FLAG_NUMBER);
+            Int firstC2FlagIdx = -1;
+            for (Int idx = 0; idx < numC1Flag; idx++)
+            {
+                UInt uiSymbol = absCoeff[idx] > 1;
+                m_pcBinIf->encodeBin(uiSymbol, baseCtxMod[c1]);
+                if (uiSymbol)
+                {
+                    c1 = 0;
+
+                    if (firstC2FlagIdx == -1)
+                    {
+                        firstC2FlagIdx = idx;
+                    }
+                }
+                else if ((c1 < 3) && (c1 > 0))
+                {
+                    c1++;
+                }
+            }
+
+            if (c1 == 0)
+            {
+
+                baseCtxMod = (eTType == TEXT_LUMA) ? m_cCUAbsSCModel.get(0, 0) + uiCtxSet : m_cCUAbsSCModel.get(0, 0) + NUM_ABS_FLAG_CTX_LUMA + uiCtxSet;
+                if (firstC2FlagIdx != -1)
+                {
+                    UInt symbol = absCoeff[firstC2FlagIdx] > 2;
+                    m_pcBinIf->encodeBin(symbol, baseCtxMod[0]);
+                }
+            }
+
+            if (beValid && signHidden)
+            {
+                m_pcBinIf->encodeBinsEP((coeffSigns >> 1), numNonZero - 1);
+            }
+            else
+            {
+                m_pcBinIf->encodeBinsEP(coeffSigns, numNonZero);
+            }
+
+            Int iFirstCoeff2 = 1;
+            if (c1 == 0 || numNonZero > C1FLAG_NUMBER)
+            {
+                for (Int idx = 0; idx < numNonZero; idx++)
+                {
+                    UInt baseLevel = (idx < C1FLAG_NUMBER) ? (2 + iFirstCoeff2) : 1;
+
+                    if (absCoeff[idx] >= baseLevel)
+                    {
+                        xWriteCoefRemainExGolomb(absCoeff[idx] - baseLevel, uiGoRiceParam);
+                        if (absCoeff[idx] > 3 * (1 << uiGoRiceParam))
+                        {
+                            uiGoRiceParam = min<UInt>(uiGoRiceParam + 1, 4);
+                        }
+                    }
+                    if (absCoeff[idx] >= 2)
+                    {
+                        iFirstCoeff2 = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    return;
+}
+Void TEncSbac::codeCoeffNxNwr(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
+{
+    UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
+    ucDir = ucDir == DM_CHROMA_IDX ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
     TCoeff pcCoefReLT[uiWidth * uiHeight];
+    TCoeff pcCoefReLD[uiWidth * uiHeight];
+    TCoeff pcCoefReRT[uiWidth * uiHeight];
+    TCoeff pcCoefReRD[uiWidth * uiHeight];
+    TCoeff pcCoefReMID[uiWidth * uiHeight];
     Int k, l;
+    Double energy_hevc = 0;
+    Double energy_LT = 0;
+    Double energy_LD = 0;
+    Double energy_RT = 0;
+    Double energy_RD = 0;
+    Double energy_MID = 0;
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_hevc += pow(pcCoef[k * uiWidth + l], 2);
+        }
+    }
+
     for (k = 0; k < uiWidth; k++)
     {
         pcCoefReLT[k] = pcCoef[k];
@@ -1038,6 +1328,215 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             }
         }
     }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_LT += pow(pcCoefReLT[k * uiWidth + l], 2);
+        }
+    }
+
+    for (k = 0; k < uiWidth; k++)
+    {
+        pcCoefReLD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
+        pcCoefReLD[k * uiWidth] = pcCoef[k * uiWidth];
+    }
+    for (k = uiWidth - 2; k >= 0; k--)
+    {
+        for (l = 1; l < uiWidth; l++)
+        {
+            TCoeff left = pcCoef[k * uiWidth - 1 + l];
+            TCoeff down = pcCoef[(k + 1) * uiWidth + l];
+            TCoeff leftdown = pcCoef[(k + 1) * uiWidth - 1 + l];
+            if (leftdown >= max(left, down))
+            {
+                pcCoefReLD[k * uiWidth + l] = min(left, down) - pcCoef[k * uiWidth + l];
+            }
+            else if (leftdown <= min(left, down))
+            {
+                pcCoefReLD[k * uiWidth + l] = max(left, down) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReLD[k * uiWidth + l] = left + down - leftdown - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_LD += pow(pcCoefReLD[k * uiWidth + l], 2);
+        }
+    }
+
+    for (k = 0; k < uiWidth; k++)
+    {
+        pcCoefReRD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
+        pcCoefReRD[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
+    }
+    for (k = uiWidth - 2; k >= 0; k--)
+    {
+        for (l = uiWidth - 2; l >= 0; l--)
+        {
+            TCoeff right = pcCoef[k * uiWidth + 1 + l];
+            TCoeff down = pcCoef[(k + 1) * uiWidth + l];
+            TCoeff rightdown = pcCoef[(k + 1) * uiWidth + 1 + l];
+            if (rightdown >= max(right, down))
+            {
+                pcCoefReRD[k * uiWidth + l] = min(right, down) - pcCoef[k * uiWidth + l];
+            }
+            else if (rightdown <= min(right, down))
+            {
+                pcCoefReRD[k * uiWidth + l] = max(right, down) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReRD[k * uiWidth + l] = right + down - rightdown - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_RD += pow(pcCoefReRD[k * uiWidth + l], 2);
+        }
+    }
+
+    for (k = 0; k < uiWidth; k++)
+    {
+        pcCoefReRT[k] = pcCoef[k];
+        pcCoefReRT[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
+    }
+    for (k = 1; k < uiWidth; k++)
+    {
+        for (l = uiWidth - 2; l >= 0; l--)
+        {
+            TCoeff right = pcCoef[k * uiWidth + 1 + l];
+            TCoeff top = pcCoef[(k - 1) * uiWidth + l];
+            TCoeff righttop = pcCoef[(k - 1) * uiWidth + 1 + l];
+            if (righttop >= max(right, top))
+            {
+                pcCoefReRT[k * uiWidth + l] = min(right, top) - pcCoef[k * uiWidth + l];
+            }
+            else if (righttop <= min(right, top))
+            {
+                pcCoefReRT[k * uiWidth + l] = max(right, top) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReRT[k * uiWidth + l] = right + top - righttop - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_RT += pow(pcCoefReRT[k * uiWidth + l], 2);
+        }
+    }
+
+    UInt uiMidLine = uiWidth / 2 - 1;
+    for (k = 0; k < uiWidth; k++)
+    {
+        pcCoefReMID[k + uiWidth * uiMidLine] = pcCoef[k + uiWidth * uiMidLine];
+        pcCoefReMID[k * uiWidth + uiMidLine] = pcCoef[k * uiWidth + uiMidLine];
+    }
+    for (k = uiMidLine - 1; k >= 0; k--)
+    {
+        for (l = uiMidLine - 1; l >= 0; l--)
+        {
+            TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
+            TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
+            TCoeff far = pcCoef[(k + 1) * uiWidth + 1 + l];
+            if (far >= max(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else if (far <= min(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = uiMidLine - 1; k >= 0; k--)
+    {
+        for (l = uiMidLine + 1; l < uiWidth; l++)
+        {
+            TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
+            TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
+            TCoeff far = pcCoef[(k + 1) * uiWidth - 1 + l];
+            if (far >= max(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else if (far <= min(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = uiMidLine + 1; k < uiWidth; k++)
+    {
+        for (l = uiMidLine - 1; l >= 0; l--)
+        {
+            TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
+            TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
+            TCoeff far = pcCoef[(k - 1) * uiWidth + 1 + l];
+            if (far >= max(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else if (far <= min(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = uiMidLine + 1; k < uiWidth; k++)
+    {
+        for (l = uiMidLine + 1; l < uiWidth; l++)
+        {
+            TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
+            TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
+            TCoeff far = pcCoef[(k - 1) * uiWidth - 1 + l];
+            if (far >= max(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else if (far <= min(near1, near2))
+            {
+                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_MID += pow(pcCoefReMID[k * uiWidth + l], 2);
+        }
+    }
+
+    std::cout << "Channel," << eTType << ",Size," << uiWidth << ",Mode," << UInt(ucDir) << ",Energy,HEVC," << energy_hevc << ",LT," << energy_LT << ",LD," << energy_LD << ",RD," << energy_RD << ",RT," << energy_RT << ",MID," << energy_MID << std::endl;
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")

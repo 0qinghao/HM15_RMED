@@ -280,6 +280,16 @@ Void TEncCu::encodeCU(TComDataCU *pcCU)
     // Encode CU data
     xEncodeCU(pcCU, 0, 0);
 }
+Void TEncCu::encodeCUwr(TComDataCU *pcCU)
+{
+    if (pcCU->getSlice()->getPPS()->getUseDQP())
+    {
+        setdQPFlag(true);
+    }
+
+    // Encode CU data
+    xEncodeCUwr(pcCU, 0, 0);
+}
 
 // ====================================================================================================================
 // Protected member functions
@@ -1084,6 +1094,96 @@ Void TEncCu::xEncodeCU(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
     // Encode Coefficients
     Bool bCodeDQP = getdQPFlag();
     m_pcEntropyCoder->encodeCoeff(pcCU, uiAbsPartIdx, uiDepth, pcCU->getWidth(uiAbsPartIdx), pcCU->getHeight(uiAbsPartIdx), bCodeDQP);
+    setdQPFlag(bCodeDQP);
+
+    // --- write terminating bit ---
+    finishCU(pcCU, uiAbsPartIdx, uiDepth);
+}
+Void TEncCu::xEncodeCUwr(TComDataCU *pcCU, UInt uiAbsPartIdx, UInt uiDepth)
+{
+    TComPic *pcPic = pcCU->getPic();
+
+    Bool bBoundary = false;
+    UInt uiLPelX = pcCU->getCUPelX() + g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]];
+    UInt uiRPelX = uiLPelX + (g_uiMaxCUWidth >> uiDepth) - 1;
+    UInt uiTPelY = pcCU->getCUPelY() + g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]];
+    UInt uiBPelY = uiTPelY + (g_uiMaxCUHeight >> uiDepth) - 1;
+
+    TComSlice *pcSlice = pcCU->getPic()->getSlice(pcCU->getPic()->getCurrSliceIdx());
+    // If slice start is within this cu...
+    Bool bSliceStart = pcSlice->getSliceSegmentCurStartCUAddr() > pcPic->getPicSym()->getInverseCUOrderMap(pcCU->getAddr()) * pcCU->getPic()->getNumPartInCU() + uiAbsPartIdx &&
+                       pcSlice->getSliceSegmentCurStartCUAddr() < pcPic->getPicSym()->getInverseCUOrderMap(pcCU->getAddr()) * pcCU->getPic()->getNumPartInCU() + uiAbsPartIdx + (pcPic->getNumPartInCU() >> (uiDepth << 1));
+    // We need to split, so don't try these modes.
+    if (!bSliceStart && (uiRPelX < pcSlice->getSPS()->getPicWidthInLumaSamples()) && (uiBPelY < pcSlice->getSPS()->getPicHeightInLumaSamples()))
+    {
+        m_pcEntropyCoder->encodeSplitFlag(pcCU, uiAbsPartIdx, uiDepth);
+    }
+    else
+    {
+        bBoundary = true;
+    }
+
+    if (((uiDepth < pcCU->getDepth(uiAbsPartIdx)) && (uiDepth < (g_uiMaxCUDepth - g_uiAddCUDepth))) || bBoundary)
+    {
+        UInt uiQNumParts = (pcPic->getNumPartInCU() >> (uiDepth << 1)) >> 2;
+        if ((g_uiMaxCUWidth >> uiDepth) == pcCU->getSlice()->getPPS()->getMinCuDQPSize() && pcCU->getSlice()->getPPS()->getUseDQP())
+        {
+            setdQPFlag(true);
+        }
+        for (UInt uiPartUnitIdx = 0; uiPartUnitIdx < 4; uiPartUnitIdx++, uiAbsPartIdx += uiQNumParts)
+        {
+            uiLPelX = pcCU->getCUPelX() + g_auiRasterToPelX[g_auiZscanToRaster[uiAbsPartIdx]];
+            uiTPelY = pcCU->getCUPelY() + g_auiRasterToPelY[g_auiZscanToRaster[uiAbsPartIdx]];
+            Bool bInSlice = pcCU->getSCUAddr() + uiAbsPartIdx + uiQNumParts > pcSlice->getSliceSegmentCurStartCUAddr() && pcCU->getSCUAddr() + uiAbsPartIdx < pcSlice->getSliceSegmentCurEndCUAddr();
+            if (bInSlice && (uiLPelX < pcSlice->getSPS()->getPicWidthInLumaSamples()) && (uiTPelY < pcSlice->getSPS()->getPicHeightInLumaSamples()))
+            {
+                xEncodeCUwr(pcCU, uiAbsPartIdx, uiDepth + 1);
+            }
+        }
+        return;
+    }
+
+    if ((g_uiMaxCUWidth >> uiDepth) >= pcCU->getSlice()->getPPS()->getMinCuDQPSize() && pcCU->getSlice()->getPPS()->getUseDQP())
+    {
+        setdQPFlag(true);
+    }
+    if (pcCU->getSlice()->getPPS()->getTransquantBypassEnableFlag())
+    {
+        m_pcEntropyCoder->encodeCUTransquantBypassFlag(pcCU, uiAbsPartIdx);
+    }
+    if (!pcCU->getSlice()->isIntra())
+    {
+        m_pcEntropyCoder->encodeSkipFlag(pcCU, uiAbsPartIdx);
+    }
+
+    if (pcCU->isSkipped(uiAbsPartIdx))
+    {
+        m_pcEntropyCoder->encodeMergeIndex(pcCU, uiAbsPartIdx);
+        finishCU(pcCU, uiAbsPartIdx, uiDepth);
+        return;
+    }
+    m_pcEntropyCoder->encodePredMode(pcCU, uiAbsPartIdx);
+
+    m_pcEntropyCoder->encodePartSize(pcCU, uiAbsPartIdx, uiDepth);
+
+    if (pcCU->isIntra(uiAbsPartIdx) && pcCU->getPartitionSize(uiAbsPartIdx) == SIZE_2Nx2N)
+    {
+        m_pcEntropyCoder->encodeIPCMInfo(pcCU, uiAbsPartIdx);
+
+        if (pcCU->getIPCMFlag(uiAbsPartIdx))
+        {
+            // Encode slice finish
+            finishCU(pcCU, uiAbsPartIdx, uiDepth);
+            return;
+        }
+    }
+
+    // prediction Info ( Intra : direction mode, Inter : Mv, reference idx )
+    m_pcEntropyCoder->encodePredInfo(pcCU, uiAbsPartIdx);
+
+    // Encode Coefficients
+    Bool bCodeDQP = getdQPFlag();
+    m_pcEntropyCoder->encodeCoeffwr(pcCU, uiAbsPartIdx, uiDepth, pcCU->getWidth(uiAbsPartIdx), pcCU->getHeight(uiAbsPartIdx), bCodeDQP);
     setdQPFlag(bCodeDQP);
 
     // --- write terminating bit ---

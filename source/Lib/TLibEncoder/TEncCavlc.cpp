@@ -1178,6 +1178,10 @@ Void TEncCavlc::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 {
     assert(0);
 }
+Void TEncCavlc::codeCoeffNxNwr(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
+{
+    assert(0);
+}
 
 Void TEncCavlc::estBit(estBitsSbacStruct *pcEstBitsCabac, Int width, Int height, TextType eTType)
 {
