@@ -1328,7 +1328,8 @@ Void TEncSlice::encodeSlice(TComPic *&rpcPic, TComOutputBitstream *pcSubstreams)
         }
         else
         {
-            m_pcCuEncoder->encodeCUwr(pcCU);
+            // m_pcCuEncoder->encodeCUwr(pcCU);
+            m_pcCuEncoder->encodeCU(pcCU);
         }
 #if ENC_DEC_TRACE
         g_bJustDoIt = g_bEncDecTraceDisable;

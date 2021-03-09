@@ -845,3 +845,4 @@ HEVC_test_sequence/
 !.vscode/breakpoints*
 !bin/
 *.P
+log_CoeffProcess_*
