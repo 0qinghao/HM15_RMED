@@ -465,10 +465,10 @@ Void initSigLastScan(UInt *pBuffD, UInt *pBuffH, UInt *pBuffV, Int iWidth, Int i
     }
 
     // 强制使扫描 32x32 块时的 4x4 块顺序也做成水平
-    for (UInt uiT = 0; uiT < 64; uiT++)
-    {
-        g_sigLastScanCG32x32[uiT] = uiT;
-    }
+    // for (UInt uiT = 0; uiT < 64; uiT++)
+    // {
+    //     g_sigLastScanCG32x32[uiT] = uiT;
+    // }
 }
 
 Int g_quantTSDefault4x4[16] =
