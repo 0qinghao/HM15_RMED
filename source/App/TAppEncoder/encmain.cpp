@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
     TAppEncTop cTAppEncTop;
 
     // print information
-    fprintf(stdout, "\n");
-    fprintf(stdout, "HM software: Encoder Version [%s]", NV_VERSION);
-    fprintf(stdout, NVM_ONOS);
-    fprintf(stdout, NVM_COMPILEDBY);
-    fprintf(stdout, NVM_BITS);
-    fprintf(stdout, "\n");
+    // fprintf(stdout, "\n");
+    // fprintf(stdout, "HM software: Encoder Version [%s]", NV_VERSION);
+    // fprintf(stdout, NVM_ONOS);
+    // fprintf(stdout, NVM_COMPILEDBY);
+    // fprintf(stdout, NVM_BITS);
+    // fprintf(stdout, "\n");
 
     // create application encoder class
     cTAppEncTop.create();

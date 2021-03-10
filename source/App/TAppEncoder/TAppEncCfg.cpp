@@ -1251,112 +1251,112 @@ Void TAppEncCfg::xSetGlobal()
 
 Void TAppEncCfg::xPrintParameter()
 {
-    printf("\n");
-    printf("Input          File          : %s\n", m_pchInputFile);
-    printf("Bitstream      File          : %s\n", m_pchBitstreamFile);
-    printf("Reconstruction File          : %s\n", m_pchReconFile);
-    printf("Real     Format              : %dx%d %dHz\n", m_iSourceWidth - m_confWinLeft - m_confWinRight, m_iSourceHeight - m_confWinTop - m_confWinBottom, m_iFrameRate);
-    printf("Internal Format              : %dx%d %dHz\n", m_iSourceWidth, m_iSourceHeight, m_iFrameRate);
-    if (m_isField)
-    {
-        printf("Frame/Field          : Field based coding\n");
-        printf("Field index          : %u - %d (%d fields)\n", m_FrameSkip, m_FrameSkip + m_framesToBeEncoded - 1, m_framesToBeEncoded);
-        if (m_isTopFieldFirst)
-        {
-            printf("Field Order            : Top field first\n");
-        }
-        else
-        {
-            printf("Field Order            : Bottom field first\n");
-        }
-    }
-    else
-    {
-        printf("Frame/Field                  : Frame based coding\n");
-        printf("Frame index                  : %u - %d (%d frames)\n", m_FrameSkip, m_FrameSkip + m_framesToBeEncoded - 1, m_framesToBeEncoded);
-    }
-    printf("CU size / depth              : %d / %d\n", m_uiMaxCUWidth, m_uiMaxCUDepth);
-    printf("RQT trans. size (min / max)  : %d / %d\n", 1 << m_uiQuadtreeTULog2MinSize, 1 << m_uiQuadtreeTULog2MaxSize);
-    printf("Max RQT depth inter          : %d\n", m_uiQuadtreeTUMaxDepthInter);
-    printf("Max RQT depth intra          : %d\n", m_uiQuadtreeTUMaxDepthIntra);
-    printf("Min PCM size                 : %d\n", 1 << m_uiPCMLog2MinSize);
-    printf("Motion search range          : %d\n", m_iSearchRange);
-    printf("Intra period                 : %d\n", m_iIntraPeriod);
-    printf("Decoding refresh type        : %d\n", m_iDecodingRefreshType);
-    printf("QP                           : %5.2f\n", m_fQP);
-    printf("Max dQP signaling depth      : %d\n", m_iMaxCuDQPDepth);
+//     printf("\n");
+//     printf("Input          File          : %s\n", m_pchInputFile);
+//     printf("Bitstream      File          : %s\n", m_pchBitstreamFile);
+//     printf("Reconstruction File          : %s\n", m_pchReconFile);
+//     printf("Real     Format              : %dx%d %dHz\n", m_iSourceWidth - m_confWinLeft - m_confWinRight, m_iSourceHeight - m_confWinTop - m_confWinBottom, m_iFrameRate);
+//     printf("Internal Format              : %dx%d %dHz\n", m_iSourceWidth, m_iSourceHeight, m_iFrameRate);
+//     if (m_isField)
+//     {
+//         printf("Frame/Field          : Field based coding\n");
+//         printf("Field index          : %u - %d (%d fields)\n", m_FrameSkip, m_FrameSkip + m_framesToBeEncoded - 1, m_framesToBeEncoded);
+//         if (m_isTopFieldFirst)
+//         {
+//             printf("Field Order            : Top field first\n");
+//         }
+//         else
+//         {
+//             printf("Field Order            : Bottom field first\n");
+//         }
+//     }
+//     else
+//     {
+//         printf("Frame/Field                  : Frame based coding\n");
+//         printf("Frame index                  : %u - %d (%d frames)\n", m_FrameSkip, m_FrameSkip + m_framesToBeEncoded - 1, m_framesToBeEncoded);
+//     }
+//     printf("CU size / depth              : %d / %d\n", m_uiMaxCUWidth, m_uiMaxCUDepth);
+//     printf("RQT trans. size (min / max)  : %d / %d\n", 1 << m_uiQuadtreeTULog2MinSize, 1 << m_uiQuadtreeTULog2MaxSize);
+//     printf("Max RQT depth inter          : %d\n", m_uiQuadtreeTUMaxDepthInter);
+//     printf("Max RQT depth intra          : %d\n", m_uiQuadtreeTUMaxDepthIntra);
+//     printf("Min PCM size                 : %d\n", 1 << m_uiPCMLog2MinSize);
+//     printf("Motion search range          : %d\n", m_iSearchRange);
+//     printf("Intra period                 : %d\n", m_iIntraPeriod);
+//     printf("Decoding refresh type        : %d\n", m_iDecodingRefreshType);
+//     printf("QP                           : %5.2f\n", m_fQP);
+//     printf("Max dQP signaling depth      : %d\n", m_iMaxCuDQPDepth);
 
-    printf("Cb QP Offset                 : %d\n", m_cbQpOffset);
-    printf("Cr QP Offset                 : %d\n", m_crQpOffset);
+//     printf("Cb QP Offset                 : %d\n", m_cbQpOffset);
+//     printf("Cr QP Offset                 : %d\n", m_crQpOffset);
 
-    printf("QP adaptation                : %d (range=%d)\n", m_bUseAdaptiveQP, (m_bUseAdaptiveQP ? m_iQPAdaptationRange : 0));
-    printf("GOP size                     : %d\n", m_iGOPSize);
-    printf("Internal bit depth           : (Y:%d, C:%d)\n", m_internalBitDepthY, m_internalBitDepthC);
-    printf("PCM sample bit depth         : (Y:%d, C:%d)\n", g_uiPCMBitDepthLuma, g_uiPCMBitDepthChroma);
-    printf("RateControl                  : %d\n", m_RCEnableRateControl);
-    if (m_RCEnableRateControl)
-    {
-        printf("TargetBitrate                : %d\n", m_RCTargetBitrate);
-        printf("KeepHierarchicalBit          : %d\n", m_RCKeepHierarchicalBit);
-        printf("LCULevelRC                   : %d\n", m_RCLCULevelRC);
-        printf("UseLCUSeparateModel          : %d\n", m_RCUseLCUSeparateModel);
-        printf("InitialQP                    : %d\n", m_RCInitialQP);
-        printf("ForceIntraQP                 : %d\n", m_RCForceIntraQP);
-    }
-    printf("Max Num Merge Candidates     : %d\n", m_maxNumMergeCand);
-    printf("\n");
+//     printf("QP adaptation                : %d (range=%d)\n", m_bUseAdaptiveQP, (m_bUseAdaptiveQP ? m_iQPAdaptationRange : 0));
+//     printf("GOP size                     : %d\n", m_iGOPSize);
+//     printf("Internal bit depth           : (Y:%d, C:%d)\n", m_internalBitDepthY, m_internalBitDepthC);
+//     printf("PCM sample bit depth         : (Y:%d, C:%d)\n", g_uiPCMBitDepthLuma, g_uiPCMBitDepthChroma);
+//     printf("RateControl                  : %d\n", m_RCEnableRateControl);
+//     if (m_RCEnableRateControl)
+//     {
+//         printf("TargetBitrate                : %d\n", m_RCTargetBitrate);
+//         printf("KeepHierarchicalBit          : %d\n", m_RCKeepHierarchicalBit);
+//         printf("LCULevelRC                   : %d\n", m_RCLCULevelRC);
+//         printf("UseLCUSeparateModel          : %d\n", m_RCUseLCUSeparateModel);
+//         printf("InitialQP                    : %d\n", m_RCInitialQP);
+//         printf("ForceIntraQP                 : %d\n", m_RCForceIntraQP);
+//     }
+//     printf("Max Num Merge Candidates     : %d\n", m_maxNumMergeCand);
+//     printf("\n");
 
-    printf("TOOL CFG: ");
-    printf("IBD:%d ", g_bitDepthY > m_inputBitDepthY || g_bitDepthC > m_inputBitDepthC);
-    printf("HAD:%d ", m_bUseHADME);
-    printf("RDQ:%d ", m_useRDOQ);
-    printf("RDQTS:%d ", m_useRDOQTS);
-    printf("RDpenalty:%d ", m_rdPenalty);
-    printf("SQP:%d ", m_uiDeltaQpRD);
-    printf("ASR:%d ", m_bUseASR);
-    printf("FEN:%d ", m_bUseFastEnc);
-    printf("ECU:%d ", m_bUseEarlyCU);
-    printf("FDM:%d ", m_useFastDecisionForMerge);
-    printf("CFM:%d ", m_bUseCbfFastMode);
-    printf("ESD:%d ", m_useEarlySkipDetection);
-    printf("RQT:%d ", 1);
-    printf("TransformSkip:%d ", m_useTransformSkip);
-    printf("TransformSkipFast:%d ", m_useTransformSkipFast);
-    printf("Slice: M=%d ", m_sliceMode);
-    if (m_sliceMode != 0)
-    {
-        printf("A=%d ", m_sliceArgument);
-    }
-    printf("SliceSegment: M=%d ", m_sliceSegmentMode);
-    if (m_sliceSegmentMode != 0)
-    {
-        printf("A=%d ", m_sliceSegmentArgument);
-    }
-    printf("CIP:%d ", m_bUseConstrainedIntraPred);
-    printf("SAO:%d ", (m_bUseSAO) ? (1) : (0));
-    printf("PCM:%d ", (m_usePCM && (1 << m_uiPCMLog2MinSize) <= m_uiMaxCUWidth) ? 1 : 0);
-    if (m_TransquantBypassEnableFlag && m_CUTransquantBypassFlagForce)
-    {
-        printf("TransQuantBypassEnabled: =1 ");
-    }
-    else
-    {
-        printf("TransQuantBypassEnabled:%d ", (m_TransquantBypassEnableFlag) ? 1 : 0);
-    }
-    printf("WPP:%d ", (Int)m_useWeightedPred);
-    printf("WPB:%d ", (Int)m_useWeightedBiPred);
-    printf("PME:%d ", m_log2ParallelMergeLevel);
-    printf(" WaveFrontSynchro:%d WaveFrontSubstreams:%d",
-           m_iWaveFrontSynchro, m_iWaveFrontSubstreams);
-    printf(" ScalingList:%d ", m_useScalingListId);
-    printf("TMVPMode:%d ", m_TMVPModeId);
-#if ADAPTIVE_QP_SELECTION
-    printf("AQpS:%d", m_bUseAdaptQpSelect);
-#endif
+//     printf("TOOL CFG: ");
+//     printf("IBD:%d ", g_bitDepthY > m_inputBitDepthY || g_bitDepthC > m_inputBitDepthC);
+//     printf("HAD:%d ", m_bUseHADME);
+//     printf("RDQ:%d ", m_useRDOQ);
+//     printf("RDQTS:%d ", m_useRDOQTS);
+//     printf("RDpenalty:%d ", m_rdPenalty);
+//     printf("SQP:%d ", m_uiDeltaQpRD);
+//     printf("ASR:%d ", m_bUseASR);
+//     printf("FEN:%d ", m_bUseFastEnc);
+//     printf("ECU:%d ", m_bUseEarlyCU);
+//     printf("FDM:%d ", m_useFastDecisionForMerge);
+//     printf("CFM:%d ", m_bUseCbfFastMode);
+//     printf("ESD:%d ", m_useEarlySkipDetection);
+//     printf("RQT:%d ", 1);
+//     printf("TransformSkip:%d ", m_useTransformSkip);
+//     printf("TransformSkipFast:%d ", m_useTransformSkipFast);
+//     printf("Slice: M=%d ", m_sliceMode);
+//     if (m_sliceMode != 0)
+//     {
+//         printf("A=%d ", m_sliceArgument);
+//     }
+//     printf("SliceSegment: M=%d ", m_sliceSegmentMode);
+//     if (m_sliceSegmentMode != 0)
+//     {
+//         printf("A=%d ", m_sliceSegmentArgument);
+//     }
+//     printf("CIP:%d ", m_bUseConstrainedIntraPred);
+//     printf("SAO:%d ", (m_bUseSAO) ? (1) : (0));
+//     printf("PCM:%d ", (m_usePCM && (1 << m_uiPCMLog2MinSize) <= m_uiMaxCUWidth) ? 1 : 0);
+//     if (m_TransquantBypassEnableFlag && m_CUTransquantBypassFlagForce)
+//     {
+//         printf("TransQuantBypassEnabled: =1 ");
+//     }
+//     else
+//     {
+//         printf("TransQuantBypassEnabled:%d ", (m_TransquantBypassEnableFlag) ? 1 : 0);
+//     }
+//     printf("WPP:%d ", (Int)m_useWeightedPred);
+//     printf("WPB:%d ", (Int)m_useWeightedBiPred);
+//     printf("PME:%d ", m_log2ParallelMergeLevel);
+//     printf(" WaveFrontSynchro:%d WaveFrontSubstreams:%d",
+//            m_iWaveFrontSynchro, m_iWaveFrontSubstreams);
+//     printf(" ScalingList:%d ", m_useScalingListId);
+//     printf("TMVPMode:%d ", m_TMVPModeId);
+// #if ADAPTIVE_QP_SELECTION
+//     printf("AQpS:%d", m_bUseAdaptQpSelect);
+// #endif
 
-    printf(" SignBitHidingFlag:%d ", m_signHideFlag);
-    printf("RecalQP:%d", m_recalculateQPAccordingToLambda ? 1 : 0);
-    printf("\n\n");
+//     printf(" SignBitHidingFlag:%d ", m_signHideFlag);
+//     printf("RecalQP:%d", m_recalculateQPAccordingToLambda ? 1 : 0);
+//     printf("\n\n");
 
     fflush(stdout);
 }

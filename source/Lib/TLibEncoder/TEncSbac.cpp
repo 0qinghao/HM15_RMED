@@ -1283,22 +1283,40 @@ Void TEncSbac::codeCoeffNxNwr(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartId
     UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
     ucDir = ucDir == DM_CHROMA_IDX ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
     TCoeff pcCoefReLT[uiWidth * uiHeight];
-    TCoeff pcCoefReLD[uiWidth * uiHeight];
-    TCoeff pcCoefReRT[uiWidth * uiHeight];
-    TCoeff pcCoefReRD[uiWidth * uiHeight];
-    TCoeff pcCoefReMID[uiWidth * uiHeight];
+    // TCoeff pcCoefReLD[uiWidth * uiHeight];
+    // TCoeff pcCoefReRT[uiWidth * uiHeight];
+    // TCoeff pcCoefReRD[uiWidth * uiHeight];
+    // TCoeff pcCoefReMID[uiWidth * uiHeight];
     Int k, l;
     Double energy_hevc = 0;
     Double energy_LT = 0;
-    Double energy_LD = 0;
-    Double energy_RT = 0;
-    Double energy_RD = 0;
-    Double energy_MID = 0;
+    // Double energy_LD = 0;
+    // Double energy_RT = 0;
+    // Double energy_RD = 0;
+    // Double energy_MID = 0;
+    Double amp_hevc = 0;
+    Double amp_LT = 0;
+    // Double amp_LD = 0;
+    // Double amp_RT = 0;
+    // Double amp_RD = 0;
+    // Double amp_MID = 0;
     for (k = 0; k < uiWidth; k++)
     {
         for (l = 0; l < uiWidth; l++)
         {
             energy_hevc += pow(pcCoef[k * uiWidth + l], 2);
+            amp_hevc += abs(pcCoef[k * uiWidth + l]);
+        }
+    }
+    Double energy_hevc_Refpart = 0, amp_hevc_Refpart = 0;
+    for (k = 0; k < uiWidth; k++)
+    {
+        energy_hevc_Refpart += pow(pcCoef[k], 2) + pow(pcCoef[k * uiWidth], 2);
+        amp_hevc_Refpart += abs(pcCoef[k]) + abs(pcCoef[k * uiWidth]);
+        if (k == 0)
+        {
+            energy_hevc_Refpart -= pow(pcCoef[0], 2);
+            amp_hevc_Refpart -= abs(pcCoef[0]);
         }
     }
 
@@ -1333,210 +1351,218 @@ Void TEncSbac::codeCoeffNxNwr(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartId
         for (l = 0; l < uiWidth; l++)
         {
             energy_LT += pow(pcCoefReLT[k * uiWidth + l], 2);
+            amp_LT += abs(pcCoefReLT[k * uiWidth + l]);
         }
     }
 
-    for (k = 0; k < uiWidth; k++)
-    {
-        pcCoefReLD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
-        pcCoefReLD[k * uiWidth] = pcCoef[k * uiWidth];
-    }
-    for (k = uiWidth - 2; k >= 0; k--)
-    {
-        for (l = 1; l < uiWidth; l++)
-        {
-            TCoeff left = pcCoef[k * uiWidth - 1 + l];
-            TCoeff down = pcCoef[(k + 1) * uiWidth + l];
-            TCoeff leftdown = pcCoef[(k + 1) * uiWidth - 1 + l];
-            if (leftdown >= max(left, down))
-            {
-                pcCoefReLD[k * uiWidth + l] = min(left, down) - pcCoef[k * uiWidth + l];
-            }
-            else if (leftdown <= min(left, down))
-            {
-                pcCoefReLD[k * uiWidth + l] = max(left, down) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReLD[k * uiWidth + l] = left + down - leftdown - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = 0; k < uiWidth; k++)
-    {
-        for (l = 0; l < uiWidth; l++)
-        {
-            energy_LD += pow(pcCoefReLD[k * uiWidth + l], 2);
-        }
-    }
+    /* #region  不同位置作为参考点的性能测试结果不行 还是左上最好 */
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     pcCoefReLD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
+    //     pcCoefReLD[k * uiWidth] = pcCoef[k * uiWidth];
+    // }
+    // for (k = uiWidth - 2; k >= 0; k--)
+    // {
+    //     for (l = 1; l < uiWidth; l++)
+    //     {
+    //         TCoeff left = pcCoef[k * uiWidth - 1 + l];
+    //         TCoeff down = pcCoef[(k + 1) * uiWidth + l];
+    //         TCoeff leftdown = pcCoef[(k + 1) * uiWidth - 1 + l];
+    //         if (leftdown >= max(left, down))
+    //         {
+    //             pcCoefReLD[k * uiWidth + l] = min(left, down) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (leftdown <= min(left, down))
+    //         {
+    //             pcCoefReLD[k * uiWidth + l] = max(left, down) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReLD[k * uiWidth + l] = left + down - leftdown - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     for (l = 0; l < uiWidth; l++)
+    //     {
+    //         energy_LD += pow(pcCoefReLD[k * uiWidth + l], 2);
+    //         amp_LD += abs(pcCoefReLD[k * uiWidth + l]);
+    //     }
+    // }
 
-    for (k = 0; k < uiWidth; k++)
-    {
-        pcCoefReRD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
-        pcCoefReRD[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
-    }
-    for (k = uiWidth - 2; k >= 0; k--)
-    {
-        for (l = uiWidth - 2; l >= 0; l--)
-        {
-            TCoeff right = pcCoef[k * uiWidth + 1 + l];
-            TCoeff down = pcCoef[(k + 1) * uiWidth + l];
-            TCoeff rightdown = pcCoef[(k + 1) * uiWidth + 1 + l];
-            if (rightdown >= max(right, down))
-            {
-                pcCoefReRD[k * uiWidth + l] = min(right, down) - pcCoef[k * uiWidth + l];
-            }
-            else if (rightdown <= min(right, down))
-            {
-                pcCoefReRD[k * uiWidth + l] = max(right, down) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReRD[k * uiWidth + l] = right + down - rightdown - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = 0; k < uiWidth; k++)
-    {
-        for (l = 0; l < uiWidth; l++)
-        {
-            energy_RD += pow(pcCoefReRD[k * uiWidth + l], 2);
-        }
-    }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     pcCoefReRD[k + uiWidth * (uiWidth - 1)] = pcCoef[k + uiWidth * (uiWidth - 1)];
+    //     pcCoefReRD[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
+    // }
+    // for (k = uiWidth - 2; k >= 0; k--)
+    // {
+    //     for (l = uiWidth - 2; l >= 0; l--)
+    //     {
+    //         TCoeff right = pcCoef[k * uiWidth + 1 + l];
+    //         TCoeff down = pcCoef[(k + 1) * uiWidth + l];
+    //         TCoeff rightdown = pcCoef[(k + 1) * uiWidth + 1 + l];
+    //         if (rightdown >= max(right, down))
+    //         {
+    //             pcCoefReRD[k * uiWidth + l] = min(right, down) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (rightdown <= min(right, down))
+    //         {
+    //             pcCoefReRD[k * uiWidth + l] = max(right, down) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReRD[k * uiWidth + l] = right + down - rightdown - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     for (l = 0; l < uiWidth; l++)
+    //     {
+    //         energy_RD += pow(pcCoefReRD[k * uiWidth + l], 2);
+    //         amp_RD += abs(pcCoefReRD[k * uiWidth + l]);
+    //     }
+    // }
 
-    for (k = 0; k < uiWidth; k++)
-    {
-        pcCoefReRT[k] = pcCoef[k];
-        pcCoefReRT[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
-    }
-    for (k = 1; k < uiWidth; k++)
-    {
-        for (l = uiWidth - 2; l >= 0; l--)
-        {
-            TCoeff right = pcCoef[k * uiWidth + 1 + l];
-            TCoeff top = pcCoef[(k - 1) * uiWidth + l];
-            TCoeff righttop = pcCoef[(k - 1) * uiWidth + 1 + l];
-            if (righttop >= max(right, top))
-            {
-                pcCoefReRT[k * uiWidth + l] = min(right, top) - pcCoef[k * uiWidth + l];
-            }
-            else if (righttop <= min(right, top))
-            {
-                pcCoefReRT[k * uiWidth + l] = max(right, top) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReRT[k * uiWidth + l] = right + top - righttop - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = 0; k < uiWidth; k++)
-    {
-        for (l = 0; l < uiWidth; l++)
-        {
-            energy_RT += pow(pcCoefReRT[k * uiWidth + l], 2);
-        }
-    }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     pcCoefReRT[k] = pcCoef[k];
+    //     pcCoefReRT[k * uiWidth + (uiWidth - 1)] = pcCoef[k * uiWidth + (uiWidth - 1)];
+    // }
+    // for (k = 1; k < uiWidth; k++)
+    // {
+    //     for (l = uiWidth - 2; l >= 0; l--)
+    //     {
+    //         TCoeff right = pcCoef[k * uiWidth + 1 + l];
+    //         TCoeff top = pcCoef[(k - 1) * uiWidth + l];
+    //         TCoeff righttop = pcCoef[(k - 1) * uiWidth + 1 + l];
+    //         if (righttop >= max(right, top))
+    //         {
+    //             pcCoefReRT[k * uiWidth + l] = min(right, top) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (righttop <= min(right, top))
+    //         {
+    //             pcCoefReRT[k * uiWidth + l] = max(right, top) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReRT[k * uiWidth + l] = right + top - righttop - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     for (l = 0; l < uiWidth; l++)
+    //     {
+    //         energy_RT += pow(pcCoefReRT[k * uiWidth + l], 2);
+    //         amp_RT += abs(pcCoefReRT[k * uiWidth + l]);
+    //     }
+    // }
 
-    UInt uiMidLine = uiWidth / 2 - 1;
-    for (k = 0; k < uiWidth; k++)
-    {
-        pcCoefReMID[k + uiWidth * uiMidLine] = pcCoef[k + uiWidth * uiMidLine];
-        pcCoefReMID[k * uiWidth + uiMidLine] = pcCoef[k * uiWidth + uiMidLine];
-    }
-    for (k = uiMidLine - 1; k >= 0; k--)
-    {
-        for (l = uiMidLine - 1; l >= 0; l--)
-        {
-            TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
-            TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
-            TCoeff far = pcCoef[(k + 1) * uiWidth + 1 + l];
-            if (far >= max(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else if (far <= min(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = uiMidLine - 1; k >= 0; k--)
-    {
-        for (l = uiMidLine + 1; l < uiWidth; l++)
-        {
-            TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
-            TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
-            TCoeff far = pcCoef[(k + 1) * uiWidth - 1 + l];
-            if (far >= max(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else if (far <= min(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = uiMidLine + 1; k < uiWidth; k++)
-    {
-        for (l = uiMidLine - 1; l >= 0; l--)
-        {
-            TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
-            TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
-            TCoeff far = pcCoef[(k - 1) * uiWidth + 1 + l];
-            if (far >= max(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else if (far <= min(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = uiMidLine + 1; k < uiWidth; k++)
-    {
-        for (l = uiMidLine + 1; l < uiWidth; l++)
-        {
-            TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
-            TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
-            TCoeff far = pcCoef[(k - 1) * uiWidth - 1 + l];
-            if (far >= max(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else if (far <= min(near1, near2))
-            {
-                pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
-            }
-        }
-    }
-    for (k = 0; k < uiWidth; k++)
-    {
-        for (l = 0; l < uiWidth; l++)
-        {
-            energy_MID += pow(pcCoefReMID[k * uiWidth + l], 2);
-        }
-    }
+    // UInt uiMidLine = uiWidth / 2 - 1;
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     pcCoefReMID[k + uiWidth * uiMidLine] = pcCoef[k + uiWidth * uiMidLine];
+    //     pcCoefReMID[k * uiWidth + uiMidLine] = pcCoef[k * uiWidth + uiMidLine];
+    // }
+    // for (k = uiMidLine - 1; k >= 0; k--)
+    // {
+    //     for (l = uiMidLine - 1; l >= 0; l--)
+    //     {
+    //         TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
+    //         TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
+    //         TCoeff far = pcCoef[(k + 1) * uiWidth + 1 + l];
+    //         if (far >= max(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (far <= min(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = uiMidLine - 1; k >= 0; k--)
+    // {
+    //     for (l = uiMidLine + 1; l < uiWidth; l++)
+    //     {
+    //         TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
+    //         TCoeff near2 = pcCoef[(k + 1) * uiWidth + l];
+    //         TCoeff far = pcCoef[(k + 1) * uiWidth - 1 + l];
+    //         if (far >= max(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (far <= min(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = uiMidLine + 1; k < uiWidth; k++)
+    // {
+    //     for (l = uiMidLine - 1; l >= 0; l--)
+    //     {
+    //         TCoeff near1 = pcCoef[k * uiWidth + 1 + l];
+    //         TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
+    //         TCoeff far = pcCoef[(k - 1) * uiWidth + 1 + l];
+    //         if (far >= max(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (far <= min(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = uiMidLine + 1; k < uiWidth; k++)
+    // {
+    //     for (l = uiMidLine + 1; l < uiWidth; l++)
+    //     {
+    //         TCoeff near1 = pcCoef[k * uiWidth - 1 + l];
+    //         TCoeff near2 = pcCoef[(k - 1) * uiWidth + l];
+    //         TCoeff far = pcCoef[(k - 1) * uiWidth - 1 + l];
+    //         if (far >= max(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = min(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else if (far <= min(near1, near2))
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = max(near1, near2) - pcCoef[k * uiWidth + l];
+    //         }
+    //         else
+    //         {
+    //             pcCoefReMID[k * uiWidth + l] = near1 + near2 - far - pcCoef[k * uiWidth + l];
+    //         }
+    //     }
+    // }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     for (l = 0; l < uiWidth; l++)
+    //     {
+    //         energy_MID += pow(pcCoefReMID[k * uiWidth + l], 2);
+    //         amp_MID += abs(pcCoefReMID[k * uiWidth + l]);
+    //     }
+    // }
 
-    std::cout << "Channel," << eTType << ",Size," << uiWidth << ",Mode," << UInt(ucDir) << ",Energy,HEVC," << energy_hevc << ",LT," << energy_LT << ",LD," << energy_LD << ",RD," << energy_RD << ",RT," << energy_RT << ",MID," << energy_MID << std::endl;
+    // std::cout << eTType << "," << uiWidth << "," << UInt(ucDir) << ",HEVC," << amp_hevc << "," << energy_hevc << ",LT," << amp_LT << "," << energy_LT << ",LD," << amp_LD << "," << energy_LD << ",RD," << amp_RD << "," << energy_RD << ",RT," << amp_RT << "," << energy_RT << ",MID," << amp_MID << "," << energy_MID << std::endl;
+    /* #endregion */
+    std::cout << eTType << "," << uiWidth << "," << UInt(ucDir) << "," << amp_hevc << "," << energy_hevc << "," << amp_hevc_Refpart << "," << energy_hevc_Refpart << "," << amp_LT << "," << energy_LT << std::endl;
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
