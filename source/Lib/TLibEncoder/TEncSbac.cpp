@@ -1011,6 +1011,71 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
+    UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
+    ucDir = ucDir == DM_CHROMA_IDX ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
+    TCoeff pcCoefReLT[uiWidth * uiHeight];
+    Int k, l;
+    Double energy_hevc = 0;
+    Double energy_LT = 0;
+    Double amp_hevc = 0;
+    Double amp_LT = 0;
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_hevc += pow(pcCoef[k * uiWidth + l], 2);
+            // amp_hevc += abs(pcCoef[k * uiWidth + l]);
+        }
+    }
+    Double energy_hevc_Refpart = 0, amp_hevc_Refpart = 0;
+    for (k = 0; k < uiWidth; k++)
+    {
+        energy_hevc_Refpart += pow(pcCoef[k], 2) + pow(pcCoef[k * uiWidth], 2);
+        // amp_hevc_Refpart += abs(pcCoef[k]) + abs(pcCoef[k * uiWidth]);
+        if (k == 0)
+        {
+            energy_hevc_Refpart -= pow(pcCoef[0], 2);
+            // amp_hevc_Refpart -= abs(pcCoef[0]);
+        }
+    }
+
+    for (k = 0; k < uiWidth; k++)
+    {
+        pcCoefReLT[k] = pcCoef[k];
+        pcCoefReLT[k * uiWidth] = pcCoef[k * uiWidth];
+    }
+    for (k = 1; k < uiWidth; k++)
+    {
+        for (l = 1; l < uiWidth; l++)
+        {
+            TCoeff left = pcCoef[k * uiWidth - 1 + l];
+            TCoeff top = pcCoef[(k - 1) * uiWidth + l];
+            TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
+            if (lefttop >= max(left, top))
+            {
+                pcCoefReLT[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
+            }
+            else if (lefttop <= min(left, top))
+            {
+                pcCoefReLT[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
+            }
+            else
+            {
+                pcCoefReLT[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
+            }
+        }
+    }
+    for (k = 0; k < uiWidth; k++)
+    {
+        for (l = 0; l < uiWidth; l++)
+        {
+            energy_LT += pow(pcCoefReLT[k * uiWidth + l], 2);
+            // amp_LT += abs(pcCoefReLT[k * uiWidth + l]);
+        }
+    }
+
+    TCoeff *pcCoefToBeEnc = pcCoefReLT;
+
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
     DTRACE_CABAC_V(eTType)
@@ -1046,7 +1111,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     // compute number of significant coefficients
     // uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
-    uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoef, uiWidth * uiHeight);
+    uiNumSig = TEncEntropy::countNonZeroCoeffs(pcCoefToBeEnc, uiWidth * uiHeight);
 
     if (uiNumSig == 0)
         return;
@@ -1102,13 +1167,13 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
         UInt uiPosX = posLast - (uiPosY << uiLog2BlockSize);
         UInt uiBlkIdx = uiNumBlkSide * (uiPosY >> uiShift) + (uiPosX >> uiShift);
         // if (pcCoef[posLast])
-        if (pcCoef[posLast])
+        if (pcCoefToBeEnc[posLast])
         {
             uiSigCoeffGroupFlag[uiBlkIdx] = 1;
         }
 
         // uiNumSig -= (pcCoef[posLast] != 0);
-        uiNumSig -= (pcCoef[posLast] != 0);
+        uiNumSig -= (pcCoefToBeEnc[posLast] != 0);
     } while (uiNumSig > 0);
 
     // Code position of last coefficient
@@ -1138,9 +1203,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
         if (iScanPosSig == scanPosLast)
         {
             // absCoeff[0] = abs(pcCoef[posLast]);
-            absCoeff[0] = abs(pcCoef[posLast]);
+            absCoeff[0] = abs(pcCoefToBeEnc[posLast]);
             // coeffSigns = (pcCoef[posLast] < 0);
-            coeffSigns = (pcCoef[posLast] < 0);
+            coeffSigns = (pcCoefToBeEnc[posLast] < 0);
             numNonZero = 1;
             lastNZPosInCG = iScanPosSig;
             firstNZPosInCG = iScanPosSig;
@@ -1173,7 +1238,7 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 uiPosY = uiBlkPos >> uiLog2BlockSize;
                 uiPosX = uiBlkPos - (uiPosY << uiLog2BlockSize);
                 // uiSig = (pcCoef[uiBlkPos] != 0);
-                uiSig = (pcCoef[uiBlkPos] != 0);
+                uiSig = (pcCoefToBeEnc[uiBlkPos] != 0);
                 if (iScanPosSig > iSubPos || iSubSet == 0 || numNonZero)
                 {
                     uiCtxSig = TComTrQuant::getSigCtxInc(patternSigCtx, uiScanIdx, uiPosX, uiPosY, uiLog2BlockSize, eTType);
@@ -1182,9 +1247,9 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
                 if (uiSig)
                 {
                     // absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
-                    absCoeff[numNonZero] = abs(pcCoef[uiBlkPos]);
+                    absCoeff[numNonZero] = abs(pcCoefToBeEnc[uiBlkPos]);
                     // coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
-                    coeffSigns = 2 * coeffSigns + (pcCoef[uiBlkPos] < 0);
+                    coeffSigns = 2 * coeffSigns + (pcCoefToBeEnc[uiBlkPos] < 0);
                     numNonZero++;
                     if (lastNZPosInCG == -1)
                     {
