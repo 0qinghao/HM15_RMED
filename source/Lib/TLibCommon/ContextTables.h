@@ -444,6 +444,28 @@ static const UChar
                 141,
             },
 };
+static const UChar
+    INIT_CoeffProcess_FLAG[3][4] =
+        {
+            {
+                121,
+                140,
+                61,
+                154,
+            },
+            {
+                121,
+                140,
+                61,
+                154,
+            },
+            {
+                91,
+                171,
+                134,
+                141,
+            },
+};
 
 static const UChar
     INIT_SIG_FLAG[3][NUM_SIG_FLAG_CTX] =

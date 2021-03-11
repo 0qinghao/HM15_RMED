@@ -51,7 +51,7 @@
 
 TEncSbac::TEncSbac()
     // new structure here
-    : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
+    : m_pcBitIf(NULL), m_pcSlice(NULL), m_pcBinIf(NULL), m_uiCoeffCost(0), m_numContextModels(0), m_cCUSplitFlagSCModel(1, 1, NUM_SPLIT_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSkipFlagSCModel(1, 1, NUM_SKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeFlagExtSCModel(1, 1, NUM_MERGE_FLAG_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMergeIdxExtSCModel(1, 1, NUM_MERGE_IDX_EXT_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPartSizeSCModel(1, 1, NUM_PART_SIZE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUPredModeSCModel(1, 1, NUM_PRED_MODE_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUIntraPredSCModel(1, 1, NUM_ADI_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUChromaPredSCModel(1, 1, NUM_CHROMA_PRED_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUDeltaQpSCModel(1, 1, NUM_DELTA_QP_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUInterDirSCModel(1, 1, NUM_INTER_DIR_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCURefPicSCModel(1, 1, NUM_REF_NO_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUMvdSCModel(1, 1, NUM_MV_RES_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtCbfSCModel(1, 2, NUM_QT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUTransSubdivFlagSCModel(1, 1, NUM_TRANS_SUBDIV_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUQtRootCbfSCModel(1, 1, NUM_QT_ROOT_CBF_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigCoeffGroupSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUCoeffProcessSCModel(1, 2, NUM_SIG_CG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUSigSCModel(1, 1, NUM_SIG_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastX(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCuCtxLastY(1, 2, NUM_CTX_LAST_FLAG_XY, m_contextModels + m_numContextModels, m_numContextModels), m_cCUOneSCModel(1, 1, NUM_ONE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cCUAbsSCModel(1, 1, NUM_ABS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cMVPIdxSCModel(1, 1, NUM_MVP_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoMergeSCModel(1, 1, NUM_SAO_MERGE_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cSaoTypeIdxSCModel(1, 1, NUM_SAO_TYPE_IDX_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_cTransformSkipSCModel(1, 2, NUM_TRANSFORMSKIP_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels), m_CUTransquantBypassFlagSCModel(1, 1, NUM_CU_TRANSQUANT_BYPASS_FLAG_CTX, m_contextModels + m_numContextModels, m_numContextModels)
 {
     assert(m_numContextModels <= MAX_NUM_CTX_MOD);
 }
@@ -91,6 +91,7 @@ Void TEncSbac::resetEntropy()
     m_cCUQtCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_CBF);
     m_cCUQtRootCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_ROOT_CBF);
     m_cCUSigCoeffGroupSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_CG_FLAG);
+    m_cCUCoeffProcessSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CoeffProcess_FLAG);
     m_cCUSigSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_FLAG);
     m_cCuCtxLastX.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
     m_cCuCtxLastY.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
@@ -144,6 +145,7 @@ Void TEncSbac::determineCabacInitIdx()
             curCost += m_cCUQtCbfSCModel.calcCost(curSliceType, qp, (UChar *)INIT_QT_CBF);
             curCost += m_cCUQtRootCbfSCModel.calcCost(curSliceType, qp, (UChar *)INIT_QT_ROOT_CBF);
             curCost += m_cCUSigCoeffGroupSCModel.calcCost(curSliceType, qp, (UChar *)INIT_SIG_CG_FLAG);
+            curCost += m_cCUCoeffProcessSCModel.calcCost(curSliceType, qp, (UChar *)INIT_CoeffProcess_FLAG);
             curCost += m_cCUSigSCModel.calcCost(curSliceType, qp, (UChar *)INIT_SIG_FLAG);
             curCost += m_cCuCtxLastX.calcCost(curSliceType, qp, (UChar *)INIT_LAST);
             curCost += m_cCuCtxLastY.calcCost(curSliceType, qp, (UChar *)INIT_LAST);
@@ -192,6 +194,7 @@ Void TEncSbac::updateContextTables(SliceType eSliceType, Int iQp, Bool bExecuteF
     m_cCUQtCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_CBF);
     m_cCUQtRootCbfSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_QT_ROOT_CBF);
     m_cCUSigCoeffGroupSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_CG_FLAG);
+    m_cCUCoeffProcessSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_CoeffProcess_FLAG);
     m_cCUSigSCModel.initBuffer(eSliceType, iQp, (UChar *)INIT_SIG_FLAG);
     m_cCuCtxLastX.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
     m_cCuCtxLastY.initBuffer(eSliceType, iQp, (UChar *)INIT_LAST);
@@ -1011,33 +1014,34 @@ Void TEncSbac::codeLastSignificantXY(UInt uiPosX, UInt uiPosY, Int width, Int he
 
 Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
-    UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
-    ucDir = ucDir == DM_CHROMA_IDX ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
+    // UChar ucDir = eTType == TEXT_LUMA ? pcCU->getLumaIntraDir(uiAbsPartIdx) : pcCU->getChromaIntraDir(uiAbsPartIdx);
+    // ucDir = ucDir == DM_CHROMA_IDX ? pcCU->getLumaIntraDir(uiAbsPartIdx) : ucDir;
     TCoeff pcCoefReLT[uiWidth * uiHeight];
     Int k, l;
-    Double energy_hevc = 0;
-    Double energy_LT = 0;
+    // Double energy_hevc = 0;
+    // Double energy_LT = 0;
     Double amp_hevc = 0;
     Double amp_LT = 0;
-    for (k = 0; k < uiWidth; k++)
+    // Double energy_hevc_Refpart = 0;
+    // Double amp_hevc_Refpart = 0;
+    for (k = 1; k < uiWidth; k++)
     {
-        for (l = 0; l < uiWidth; l++)
+        for (l = 1; l < uiWidth; l++)
         {
-            energy_hevc += pow(pcCoef[k * uiWidth + l], 2);
-            // amp_hevc += abs(pcCoef[k * uiWidth + l]);
+            // energy_hevc += pow(pcCoef[k * uiWidth + l], 2);
+            amp_hevc += abs(pcCoef[k * uiWidth + l]);
         }
     }
-    Double energy_hevc_Refpart = 0, amp_hevc_Refpart = 0;
-    for (k = 0; k < uiWidth; k++)
-    {
-        energy_hevc_Refpart += pow(pcCoef[k], 2) + pow(pcCoef[k * uiWidth], 2);
-        // amp_hevc_Refpart += abs(pcCoef[k]) + abs(pcCoef[k * uiWidth]);
-        if (k == 0)
-        {
-            energy_hevc_Refpart -= pow(pcCoef[0], 2);
-            // amp_hevc_Refpart -= abs(pcCoef[0]);
-        }
-    }
+    // for (k = 0; k < uiWidth; k++)
+    // {
+    //     // energy_hevc_Refpart += pow(pcCoef[k], 2) + pow(pcCoef[k * uiWidth], 2);
+    //     amp_hevc_Refpart += abs(pcCoef[k]) + abs(pcCoef[k * uiWidth]);
+    //     if (k == 0)
+    //     {
+    //         // energy_hevc_Refpart -= pow(pcCoef[0], 2);
+    //         amp_hevc_Refpart -= abs(pcCoef[0]);
+    //     }
+    // }
 
     for (k = 0; k < uiWidth; k++)
     {
@@ -1065,24 +1069,27 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             }
         }
     }
-    for (k = 0; k < uiWidth; k++)
+    for (k = 1; k < uiWidth; k++)
     {
-        for (l = 0; l < uiWidth; l++)
+        for (l = 1; l < uiWidth; l++)
         {
-            energy_LT += pow(pcCoefReLT[k * uiWidth + l], 2);
-            // amp_LT += abs(pcCoefReLT[k * uiWidth + l]);
+            // energy_LT += pow(pcCoefReLT[k * uiWidth + l], 2);
+            amp_LT += abs(pcCoefReLT[k * uiWidth + l]);
         }
     }
 
+    ContextModel *const baseCoeffProcessCtx = m_cCUCoeffProcessSCModel.get(0, eTType == TEXT_LUMA ? 0 : 1);
     TCoeff *pcCoefToBeEnc;
-    if (energy_LT < energy_hevc)
+    if (amp_LT - amp_hevc < 0)
     {
-        m_pcBinIf->encodeBinEP(0b1);
+        // m_pcBinIf->encodeBinEP(0b1);
+        m_pcBinIf->encodeBin(0b1, baseCoeffProcessCtx[uiWidth != 4]);
         pcCoefToBeEnc = pcCoefReLT;
     }
     else
     {
-        m_pcBinIf->encodeBinEP(0b0);
+        // m_pcBinIf->encodeBinEP(0b0);
+        m_pcBinIf->encodeBin(0b0, baseCoeffProcessCtx[uiWidth != 4]);
         pcCoefToBeEnc = pcCoef;
     }
 

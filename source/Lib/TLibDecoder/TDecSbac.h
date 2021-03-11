@@ -153,6 +153,7 @@ private:
   ContextModel3DBuffer m_cCUQtRootCbfSCModel;
   
   ContextModel3DBuffer m_cCUSigCoeffGroupSCModel;
+  ContextModel3DBuffer m_cCUCoeffProcessSCModel;
   ContextModel3DBuffer m_cCUSigSCModel;
   ContextModel3DBuffer m_cCuCtxLastX;
   ContextModel3DBuffer m_cCuCtxLastY;
