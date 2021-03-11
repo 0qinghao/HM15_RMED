@@ -966,6 +966,9 @@ Void TDecSbac::parseLastSignificantXY(UInt &uiPosLastX, UInt &uiPosLastY, Int wi
 
 Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
+    UInt uiCoeffProcessFlag;
+    m_pcTDecBinIf->decodeBinEP(uiCoeffProcessFlag);
+
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
     DTRACE_CABAC_V(eTType)
@@ -1239,25 +1242,28 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
         }
     }
 
-    Int k, l;
-    for (k = 1; k < uiWidth; k++)
+    if (uiCoeffProcessFlag)
     {
-        for (l = 1; l < uiWidth; l++)
+        Int k, l;
+        for (k = 1; k < uiWidth; k++)
         {
-            TCoeff left = pcCoef[k * uiWidth - 1 + l];
-            TCoeff top = pcCoef[(k - 1) * uiWidth + l];
-            TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
-            if (lefttop >= max(left, top))
+            for (l = 1; l < uiWidth; l++)
             {
-                pcCoef[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
-            }
-            else if (lefttop <= min(left, top))
-            {
-                pcCoef[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoef[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
+                TCoeff left = pcCoef[k * uiWidth - 1 + l];
+                TCoeff top = pcCoef[(k - 1) * uiWidth + l];
+                TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
+                if (lefttop >= max(left, top))
+                {
+                    pcCoef[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
+                }
+                else if (lefttop <= min(left, top))
+                {
+                    pcCoef[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
+                }
+                else
+                {
+                    pcCoef[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
+                }
             }
         }
     }

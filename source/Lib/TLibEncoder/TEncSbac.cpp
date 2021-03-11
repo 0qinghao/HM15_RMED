@@ -1074,7 +1074,17 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
         }
     }
 
-    TCoeff *pcCoefToBeEnc = pcCoefReLT;
+    TCoeff *pcCoefToBeEnc;
+    if (energy_LT < energy_hevc)
+    {
+        m_pcBinIf->encodeBinEP(0b1);
+        pcCoefToBeEnc = pcCoefReLT;
+    }
+    else
+    {
+        m_pcBinIf->encodeBinEP(0b0);
+        pcCoefToBeEnc = pcCoef;
+    }
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
