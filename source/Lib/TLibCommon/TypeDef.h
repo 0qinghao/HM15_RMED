@@ -38,6 +38,14 @@
 #ifndef _TYPEDEF__
 #define _TYPEDEF__
 
+#define TH_Y_4 4
+#define TH_Y_8 8
+#define TH_Y_16 12
+#define TH_Y_32 16
+#define TH_C_4 2
+#define TH_C_8 4
+#define TH_C_16 6
+
 //! \ingroup TLibCommon
 //! \{
 #define HARMONIZE_GOP_FIRST_FIELD_COUPLE 1

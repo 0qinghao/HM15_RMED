@@ -1075,16 +1075,46 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
     }
 
     TCoeff *pcCoefToBeEnc;
-    if (energy_LT < energy_hevc)
+    UInt uiProcessTH;
+    if (uiWidth == 4)
     {
-        m_pcBinIf->encodeBinEP(0b1);
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_4 : TH_C_4;
+    }
+    else if (uiWidth == 8)
+    {
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_8 : TH_C_8;
+    }
+    else if (uiWidth == 16)
+    {
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_16 : TH_C_16;
+    }
+    else if (uiWidth == 32)
+    {
+        uiProcessTH = TH_Y_32;
+    }
+    else
+    {
+        assert(0);
+    }
+    if (energy_hevc_Refpart > uiProcessTH)
+    {
         pcCoefToBeEnc = pcCoefReLT;
     }
     else
     {
-        m_pcBinIf->encodeBinEP(0b0);
         pcCoefToBeEnc = pcCoef;
     }
+
+    // if (energy_LT < energy_hevc)
+    // {
+    //     m_pcBinIf->encodeBinEP(0b1);
+    //     pcCoefToBeEnc = pcCoefReLT;
+    // }
+    // else
+    // {
+    //     m_pcBinIf->encodeBinEP(0b0);
+    //     pcCoefToBeEnc = pcCoef;
+    // }
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")

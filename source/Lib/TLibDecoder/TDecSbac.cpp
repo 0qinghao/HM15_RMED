@@ -36,6 +36,7 @@
 */
 
 #include "TDecSbac.h"
+#include "math.h"
 
 //! \ingroup TLibDecoder
 //! \{
@@ -966,8 +967,8 @@ Void TDecSbac::parseLastSignificantXY(UInt &uiPosLastX, UInt &uiPosLastY, Int wi
 
 Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx, UInt uiWidth, UInt uiHeight, UInt uiDepth, TextType eTType)
 {
-    UInt uiCoeffProcessFlag;
-    m_pcTDecBinIf->decodeBinEP(uiCoeffProcessFlag);
+    // UInt uiCoeffProcessFlag;
+    // m_pcTDecBinIf->decodeBinEP(uiCoeffProcessFlag);
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
@@ -1242,9 +1243,42 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
         }
     }
 
-    if (uiCoeffProcessFlag)
+    UInt uiProcessTH;
+    if (uiWidth == 4)
     {
-        Int k, l;
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_4 : TH_C_4;
+    }
+    else if (uiWidth == 8)
+    {
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_8 : TH_C_8;
+    }
+    else if (uiWidth == 16)
+    {
+        uiProcessTH = eTType == TEXT_LUMA ? TH_Y_16 : TH_C_16;
+    }
+    else if (uiWidth == 32)
+    {
+        uiProcessTH = TH_Y_32;
+    }
+    else
+    {
+        assert(0);
+    }
+    Int k, l;
+    Double energy_hevc_Refpart = 0, amp_hevc_Refpart = 0;
+    for (k = 0; k < uiWidth; k++)
+    {
+        energy_hevc_Refpart += pow(pcCoef[k], 2) + pow(pcCoef[k * uiWidth], 2);
+        // amp_hevc_Refpart += abs(pcCoef[k]) + abs(pcCoef[k * uiWidth]);
+        if (k == 0)
+        {
+            energy_hevc_Refpart -= pow(pcCoef[0], 2);
+            // amp_hevc_Refpart -= abs(pcCoef[0]);
+        }
+    }
+    if (energy_hevc_Refpart > uiProcessTH)
+    // if (uiCoeffProcessFlag)
+    {
         for (k = 1; k < uiWidth; k++)
         {
             for (l = 1; l < uiWidth; l++)
