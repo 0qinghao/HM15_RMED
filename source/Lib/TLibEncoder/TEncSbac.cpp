@@ -1051,18 +1051,23 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
             TCoeff left = pcCoef[k * uiWidth - 1 + l];
             TCoeff top = pcCoef[(k - 1) * uiWidth + l];
             TCoeff lefttop = pcCoef[(k - 1) * uiWidth - 1 + l];
-            if (lefttop >= max(left, top))
-            {
-                pcCoefReLT[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
-            }
-            else if (lefttop <= min(left, top))
-            {
-                pcCoefReLT[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
-            }
-            else
-            {
-                pcCoefReLT[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
-            }
+            TCoeff p1 = left;
+            TCoeff p2 = top;
+            TCoeff p3 = left + top - lefttop;
+
+            pcCoefReLT[k * uiWidth + l] = p1 + p2 + p3 - max(p1, max(p2, p3)) - min(p1, min(p2, p3));
+            // if (lefttop >= max(left, top))
+            // {
+            //     pcCoefReLT[k * uiWidth + l] = min(left, top) - pcCoef[k * uiWidth + l];
+            // }
+            // else if (lefttop <= min(left, top))
+            // {
+            //     pcCoefReLT[k * uiWidth + l] = max(left, top) - pcCoef[k * uiWidth + l];
+            // }
+            // else
+            // {
+            //     pcCoefReLT[k * uiWidth + l] = left + top - lefttop - pcCoef[k * uiWidth + l];
+            // }
         }
     }
     for (k = 0; k < uiWidth; k++)
