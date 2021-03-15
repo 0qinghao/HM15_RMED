@@ -970,8 +970,7 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 {
     UInt uiCoeffProcessFlag;
     ContextModel *const baseCoeffProcessCtx = m_cCUCoeffProcessSCModel.get(0, eTType == TEXT_LUMA ? 0 : 1);
-    // m_pcTDecBinIf->decodeBin(uiCoeffProcessFlag, baseCoeffProcessCtx[uiWidth != 4]);
-    uiCoeffProcessFlag = 0;;
+    m_pcTDecBinIf->decodeBin(uiCoeffProcessFlag, baseCoeffProcessCtx[uiWidth != 4]);
 
     TextType eTTypeSrc = eTType;
 

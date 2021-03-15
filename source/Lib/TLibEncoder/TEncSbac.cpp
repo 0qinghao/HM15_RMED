@@ -1080,16 +1080,18 @@ Void TEncSbac::codeCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx,
 
     ContextModel *const baseCoeffProcessCtx = m_cCUCoeffProcessSCModel.get(0, eTType == TEXT_LUMA ? 0 : 1);
     TCoeff *pcCoefToBeEnc;
-    // if (amp_LT - amp_hevc < 0)
-    // {
-    //     m_pcBinIf->encodeBin(0b1, baseCoeffProcessCtx[uiWidth != 4]);
-    //     pcCoefToBeEnc = pcCoefReLT;
-    // }
-    // else
-    // {
-    //     m_pcBinIf->encodeBin(0b0, baseCoeffProcessCtx[uiWidth != 4]);
+    if (amp_LT - amp_hevc < 0)
+    {
+        // m_pcBinIf->encodeBinEP(0b1);
+        m_pcBinIf->encodeBin(0b1, baseCoeffProcessCtx[uiWidth != 4]);
+        pcCoefToBeEnc = pcCoefReLT;
+    }
+    else
+    {
+        // m_pcBinIf->encodeBinEP(0b0);
+        m_pcBinIf->encodeBin(0b0, baseCoeffProcessCtx[uiWidth != 4]);
         pcCoefToBeEnc = pcCoef;
-    // }
+    }
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
