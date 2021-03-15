@@ -970,7 +970,10 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 {
     UInt uiCoeffProcessFlag;
     ContextModel *const baseCoeffProcessCtx = m_cCUCoeffProcessSCModel.get(0, eTType == TEXT_LUMA ? 0 : 1);
-    m_pcTDecBinIf->decodeBin(uiCoeffProcessFlag, baseCoeffProcessCtx[uiWidth != 4]);
+    // m_pcTDecBinIf->decodeBin(uiCoeffProcessFlag, baseCoeffProcessCtx[uiWidth != 4]);
+    uiCoeffProcessFlag = 0;;
+
+    TextType eTTypeSrc = eTType;
 
     DTRACE_CABAC_VL(g_nSymbolCounter++)
     DTRACE_CABAC_T("\tparseCoeffNxN()\teType=")
@@ -1269,6 +1272,22 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
                 }
             }
         }
+    }
+
+    if (eTTypeSrc == TEXT_LUMA)
+    {
+        std::cout << "通道" << eTTypeSrc << std::endl
+                  << "尺寸" << uiWidth << std::endl
+                  << "当前CTU位置" << pcCU->m_uiCUPelX << " " << pcCU->m_uiCUPelY << std::endl
+                  << "Z顺序" << uiAbsPartIdx << std::endl;
+        for (Int i = 0; i < uiHeight; i++)
+        {
+            for (Int j = 0; j < uiWidth; j++)
+            {
+                std::cout << pcCoef[i * uiWidth + j] << " ";
+            }
+        }
+        std::cout << std::endl;
     }
 
     return;
