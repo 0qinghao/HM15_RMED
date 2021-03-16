@@ -846,3 +846,4 @@ HEVC_test_sequence/
 !bin/
 *.P
 log_CoeffProcess_*
+*.fig

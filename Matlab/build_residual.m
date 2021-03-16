@@ -1,6 +1,5 @@
-function residual_pic = build_residual(filename, fully, fullx)
+function residual_pic = build_residual(filename)
     zmat = gen_zorder_mat;
-    residual_pic = nan(fullx, fully);
     f = fopen(filename, 'r');
 
     while ~feof(f)
@@ -33,19 +32,24 @@ function residual_pic = build_residual(filename, fully, fullx)
             else
                 residual_pic_noprocess(map_pos_x:map_pos_x + cusize - 1, map_pos_y:map_pos_y + cusize - 1) = residual;
             end
-
         end
     end
-
+    fclose(f);
+    
     show_no_process = uint8((residual_pic_noprocess+255)/2);
     show_no_process = show_no_process + (255 - (max(max(show_no_process))));
     show_process = uint8((residual_pic_process+255)/2);
     show_process = show_process + (255 - (max(max(show_process))));
     % offset = abs(min(min(residual_pic_process, residual_pic_noprocess)));
+    
+    p = figure;
+%     set(p,'visible','off');
     subplot(1,2,1)
     imshow(show_no_process);
     title('未经处理的残差可视图')
     subplot(1,2,2)
     imshow(show_process);
     title('经过处理的残差可视图')
+    
+    savefig(p, strcat(filename,'.fig'), 'compact')
 end
