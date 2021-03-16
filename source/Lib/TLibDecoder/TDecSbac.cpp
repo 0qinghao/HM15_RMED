@@ -1247,6 +1247,23 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
         }
     }
 
+    if (eTTypeSrc == TEXT_LUMA)
+    {
+        std::cout << "残差处理1" << std::endl
+                //   << "通道" << eTTypeSrc << std::endl
+                  << "尺寸" << uiWidth << std::endl
+                  << "当前CTU位置" << pcCU->m_uiCUPelX << " " << pcCU->m_uiCUPelY << std::endl
+                  << "Z顺序" << uiAbsPartIdx << std::endl;
+        for (Int i = 0; i < uiHeight; i++)
+        {
+            for (Int j = 0; j < uiWidth; j++)
+            {
+                std::cout << pcCoef[i * uiWidth + j] << " ";
+            }
+        }
+        std::cout << std::endl;
+    }
+
     if (uiCoeffProcessFlag)
     {
         Int k, l;
@@ -1275,7 +1292,8 @@ Void TDecSbac::parseCoeffNxN(TComDataCU *pcCU, TCoeff *pcCoef, UInt uiAbsPartIdx
 
     if (eTTypeSrc == TEXT_LUMA)
     {
-        std::cout << "通道" << eTTypeSrc << std::endl
+        std::cout << "残差处理0" << std::endl
+                //   << "通道" << eTTypeSrc << std::endl
                   << "尺寸" << uiWidth << std::endl
                   << "当前CTU位置" << pcCU->m_uiCUPelX << " " << pcCU->m_uiCUPelY << std::endl
                   << "Z顺序" << uiAbsPartIdx << std::endl;
