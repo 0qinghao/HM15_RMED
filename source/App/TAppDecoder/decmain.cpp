@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 
   // ending time
   dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;
-  printf("\n Total Time: %12.3f sec.\n", dResult);
+  printf("\n Total Time: %12.4f sec.\n", dResult);
 
   // destroy application decoder class
   cTAppDecTop.destroy();

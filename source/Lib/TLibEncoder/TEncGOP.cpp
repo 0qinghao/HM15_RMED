@@ -2357,7 +2357,7 @@ Void TEncGOP::xCalculateAddPSNR(TComPic *pcPic, TComPicYuv *pcPicD, const Access
 #endif
 
     printf(" [Y %6.4lf dB    U %6.4lf dB    V %6.4lf dB]", dYPSNR, dUPSNR, dVPSNR);
-    printf(" [ET %5.0f ]", dEncTime);
+    printf(" [ET %5.4f ]", dEncTime);
 
     for (Int iRefList = 0; iRefList < 2; iRefList++)
     {
